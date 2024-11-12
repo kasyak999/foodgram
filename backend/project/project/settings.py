@@ -144,3 +144,9 @@ SIMPLE_JWT = {
 DJOSER = {
     'LOGIN_FIELD': 'email',  # если используете email для логина
 }
+
+# Директория загруженых файлов
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# Директория для щагрузки файлов
+MEDIA_URL = 'media/'

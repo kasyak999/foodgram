@@ -4,7 +4,8 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status, filters, viewsets, mixins
 from rest_framework.decorators import action
 # from api.permissions import IsAdmin
-from .serializers import UserRegistrationSerializer, UsersSerializer
+from .serializers import (
+    UserRegistrationSerializer, UsersSerializer, UserAvatarSerializer)
 # from .utils import send_verification_email, generate_verification_code
 
 
@@ -34,3 +35,24 @@ class UsersViewSet(viewsets.ModelViewSet):
         """users/me"""
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
+
+    @action(
+        detail=False, methods=['put', 'delete'], url_path='me/avatar',
+        permission_classes=[IsAuthenticated])
+    def avatar(self, request):
+        """Аватар пользователя"""
+        user = request.user
+        if request.method == 'PUT':
+            serializer = UserAvatarSerializer(
+                user, data=request.data, partial=True)
+            if serializer.is_valid():
+                user.avatar = serializer.validated_data.get('avatar')
+                user.save()
+                return Response(
+                    {'avatar': request.build_absolute_uri(user.avatar)})
+            return Response(serializer.errors, status=400)
+        if request.method == 'DELETE':
+            user.avatar.delete()
+            return Response(
+                {"detail": "Аватар успешно удален"},
+                status=status.HTTP_204_NO_CONTENT)

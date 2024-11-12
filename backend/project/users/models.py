@@ -11,6 +11,7 @@ class UserProfile(AbstractUser):
         unique=True, blank=True, max_length=MAX_LENGT_EMAIL)
     username = models.CharField(
         max_length=MAX_LENGT_USERNAME, blank=True, unique=True)
+    avatar = models.ImageField(upload_to='users/', null=True, blank=True)
 
     class Meta:
         """Перевод модели"""
