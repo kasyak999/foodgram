@@ -23,16 +23,14 @@ class UsersViewSet(viewsets.ModelViewSet):
         return UsersSerializer
 
     @action(
-        detail=False, methods=['get'], url_path='me',
-        permission_classes=[IsAuthenticated])
+        detail=False, methods=['get'], url_path='me')
     def user_information(self, request):
         """users/me"""
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
 
     @action(
-        detail=False, methods=['put', 'delete'], url_path='me/avatar',
-        permission_classes=[IsAuthenticated])
+        detail=False, methods=['put', 'delete'], url_path='me/avatar')
     def avatar(self, request):
         """Аватар пользователя"""
         user = request.user
