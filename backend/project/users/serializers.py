@@ -4,28 +4,10 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.tokens import AccessToken
 from .models import MAX_LENGT_EMAIL, MAX_LENGT_USERNAME
+from .validators import validate_username
 
 
 User = get_user_model()
-
-
-class TokenSerializer(serializers.Serializer):
-    """Сериализатор для получения токена."""
-
-    email = serializers.EmailField(write_only=True)
-    password = serializers.CharField(write_only=True)
-
-    class Meta:
-        fields = ("email", "password")
-
-    def validate(self, attrs):
-        print(attrs)
-        user = get_object_or_404(User, email=attrs.get("email"))
-
-        if user.check_password(attrs.get("password")):
-            token = AccessToken.for_user(user)
-            return {"auth_token": str(token)}
-        raise serializers.ValidationError("Неверный пароль")
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -42,14 +24,15 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         required=True,
         validators=[UniqueValidator(
             queryset=User.objects.all(),
-            message="Этот username уже используется")]
+            message="Этот username уже используется"), validate_username]
     )
     first_name = serializers.CharField(required=True)
     last_name = serializers.CharField(required=True)
 
     class Meta:
         model = User
-        fields = ('email', 'id', 'username', 'first_name', 'last_name', 'password')
+        fields = (
+            'email', 'id', 'username', 'first_name', 'last_name', 'password')
 
     def create(self, validated_data):
         password = validated_data.pop('password')
@@ -57,3 +40,12 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         return user
+
+
+class UsersSerializer(UserRegistrationSerializer):
+    """Сериализатор для /me и пользователей"""
+
+    class Meta:
+        model = User
+        fields = (
+            'email', 'id', 'username', 'first_name', 'last_name')

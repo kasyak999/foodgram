@@ -29,7 +29,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
+    'rest_framework.authtoken',
     'djoser',
+
     'users.apps.UsersConfig',
 
 ]
@@ -125,8 +127,11 @@ REST_FRAMEWORK = {
     ],
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ],
+
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 6,
 }
 
 SIMPLE_JWT = {
@@ -136,9 +141,6 @@ SIMPLE_JWT = {
 }
 
 
-# DJOSER = {
-#     'LOGIN_FIELD': 'email',
-#     'SERIALIZERS': {
-#         'token_create': 'djoser.serializers.TokenCreateSerializer',
-#     },
-# }
+DJOSER = {
+    'LOGIN_FIELD': 'email',  # если используете email для логина
+}
