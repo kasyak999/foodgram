@@ -1,7 +1,7 @@
 from datetime import timedelta
 from pathlib import Path
 
-AUTH_USER_MODEL = 'users.UserProfile'
+AUTH_USER_MODEL = 'api.UserProfile'
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -32,7 +32,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'djoser',
 
-    'users.apps.UsersConfig',
+    'api.apps.ApiConfig',
 
 ]
 
