@@ -3,7 +3,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.tokens import AccessToken
-from .models import MAX_LENGT_EMAIL, MAX_LENGT_USERNAME
+from .models import (
+    MAX_LENGT_EMAIL, MAX_LENGT_USERNAME, Teg, Recipe, Ingredient, Follow)
 from .validators import validate_username
 
 
@@ -50,11 +51,17 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 class UsersSerializer(UserRegistrationSerializer):
     """Сериализатор для /me и пользователей"""
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
         fields = (
-            'email', 'id', 'username', 'first_name', 'last_name')
+            'email', 'id', 'username', 'first_name', 'last_name', 'avatar',
+            'is_subscribed')
+
+    def get_is_subscribed(self, obj):
+        current_user = self.context.get('request').user
+        return Follow.objects.filter(user=current_user, following=obj).exists()
 
 
 class UserAvatarSerializer(serializers.ModelSerializer):
@@ -79,3 +86,67 @@ class UserAvatarSerializer(serializers.ModelSerializer):
             return content_file
         except (ValueError, TypeError, ValidationError):
             raise serializers.ValidationError("Некорректный формат изображения.")
+
+
+class TegSerializer(serializers.ModelSerializer):
+    """Серелизатор для вывода тегов"""
+    class Meta:
+        model = Teg
+        fields = '__all__'
+
+
+class IngredientSerializer(serializers.ModelSerializer):
+    """Серелизатор для вывода ингредиентов"""
+
+    class Meta:
+        model = Ingredient
+        fields = '__all__'
+
+
+class RecipeSerializer(serializers.ModelSerializer):
+    """Серелизатор для рецептов"""
+    tags = serializers.SerializerMethodField(read_only=True)
+    author = UsersSerializer(read_only=True)
+    ingredients = IngredientSerializer(many=True, read_only=True)
+    tags = TegSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Recipe
+        fields = ['id', 'tags', 'author', 'ingredients']
+
+
+class FollowSerializer(serializers.ModelSerializer):
+    username = serializers.SlugRelatedField(
+        slug_field='username', queryset=User.objects.all(), source='following')
+    email = serializers.EmailField(source='following.email', read_only=True)
+    id = serializers.IntegerField(source='following.id', read_only=True)
+    first_name = serializers.CharField(
+        source='following.first_name', read_only=True)
+    last_name = serializers.CharField(
+        source='following.last_name', read_only=True)
+    avatar = serializers.SerializerMethodField(read_only=True)
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
+    recipes = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Follow
+        fields = (
+            'email', 'id', 'username', 'first_name', 'last_name',
+            'is_subscribed', 'recipes', 'avatar')
+
+    def get_recipes(self, obj):
+        """Метод для получения рецептов подписанного пользователя"""
+        recipes = Recipe.objects.filter(author=obj.following)
+        # Используем сериализатор для рецептов
+        return RecipeSerializer(recipes, many=True).data
+
+    def get_avatar(self, obj):
+        request = self.context.get('request')
+        if obj.following.avatar:
+            return request.build_absolute_uri(obj.following.avatar)
+        return None
+
+    def get_is_subscribed(self, obj):
+        current_user = self.context.get('request').user
+        return Follow.objects.filter(
+            user=current_user, following=obj.following).exists()

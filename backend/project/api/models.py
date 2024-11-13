@@ -6,8 +6,8 @@ from django.contrib.auth import get_user_model
 MAX_LENGT_EMAIL = 254
 MAX_LENGT_USERNAME = 150
 WEIGHT_UNITS = [
-    ('kg', 'Килограммы'),
-    ('g', 'Граммы'),
+    ('кг', 'Килограммы'),
+    ('г', 'Граммы'),
 ]
 
 
@@ -54,9 +54,9 @@ class Recipe(PublishedModel):
         verbose_name='Автор публикации')
     picture = models.ImageField(upload_to='images/', verbose_name='Картинка')
     description = models.TextField(verbose_name='Текстовое описание')
-    Ingredient = models.ManyToManyField(
+    ingredients = models.ManyToManyField(
         'Ingredient', verbose_name='Ингредиенты')
-    tag = models.ManyToManyField('Teg', verbose_name='Теги')
+    tags = models.ManyToManyField('Teg', verbose_name='Теги')
     time_preparations = models.IntegerField(
         verbose_name='Время приготовления', help_text='в минутах')
 
@@ -87,11 +87,36 @@ class Teg(PublishedModel):
 class Ingredient(PublishedModel):
     """Ингредиент"""
     quantity = models.IntegerField(verbose_name='Количество')
-    weight_unit = models.CharField(
-        max_length=2, choices=WEIGHT_UNITS, default='g',
+    measurement_unit = models.CharField(
+        max_length=2, choices=WEIGHT_UNITS, default='кг',
         verbose_name='Единица измерения')
 
     class Meta:
         """Перевод модели"""
         verbose_name = 'ингредиент'
         verbose_name_plural = 'Ингредиенты'
+
+
+class Follow(models.Model):
+    """Подписки пользователей"""
+    following = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='following',
+        verbose_name='на кого подписан')
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='follower',
+        verbose_name='Подписчик')
+
+    class Meta:
+        """Перевод модели"""
+        verbose_name = 'подписка'
+        verbose_name_plural = 'Подписки'
+        ordering = ('user',)
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'following'],
+                name='unique_name_owner'
+            )
+        ]
+
+    def __str__(self):
+        return f'Подписчик {self.user}'

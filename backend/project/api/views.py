@@ -1,12 +1,13 @@
 from django.contrib.auth import get_user_model
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, mixins
 from rest_framework.decorators import action
 from .serializers import (
-    UserRegistrationSerializer, UsersSerializer, UserAvatarSerializer)
+    UserRegistrationSerializer, UsersSerializer, UserAvatarSerializer,
+    TegSerializer, RecipeSerializer, IngredientSerializer, FollowSerializer)
 from rest_framework.pagination import LimitOffsetPagination
-
+from .models import Teg, Recipe, Ingredient
 
 User = get_user_model()
 
@@ -48,3 +49,40 @@ class UsersViewSet(viewsets.ModelViewSet):
             return Response(
                 {"detail": "Аватар успешно удален"},
                 status=status.HTTP_204_NO_CONTENT)
+
+
+class TegViewSet(viewsets.ReadOnlyModelViewSet):
+    """Теги"""
+    queryset = Teg.objects.all()
+    permission_classes = [AllowAny]
+    serializer_class = TegSerializer
+    pagination_class = None
+
+
+class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+    """Ингредиенты"""
+    queryset = Ingredient.objects.all()
+    permission_classes = [AllowAny]
+    serializer_class = IngredientSerializer
+    pagination_class = None
+
+
+class RecipeViewSet(viewsets.ModelViewSet):  # не готово
+    """Рецепты"""
+    queryset = Recipe.objects.all()
+    permission_classes = [AllowAny]
+    serializer_class = RecipeSerializer
+    pagination_class = LimitOffsetPagination
+
+
+class FollowViewSet(
+    mixins.CreateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet
+):
+    serializer_class = FollowSerializer
+    pagination_class = LimitOffsetPagination
+
+    def get_queryset(self):
+        return self.request.user.follower.all()
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
