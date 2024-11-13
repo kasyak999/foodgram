@@ -112,33 +112,46 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ['id', 'tags', 'author', 'ingredients']
+        fields = [
+            'id', 'tags', 'author', 'ingredients', 'name', 'image',
+            'text', 'cooking_time']
 
 
 class FollowSerializer(serializers.ModelSerializer):
-    username = serializers.SlugRelatedField(
-        slug_field='username', queryset=User.objects.all(), source='following')
+    """Подписчики"""
     email = serializers.EmailField(source='following.email', read_only=True)
     id = serializers.IntegerField(source='following.id', read_only=True)
+    username = serializers.CharField(
+        source='following.username', read_only=True)
     first_name = serializers.CharField(
         source='following.first_name', read_only=True)
     last_name = serializers.CharField(
         source='following.last_name', read_only=True)
-    avatar = serializers.SerializerMethodField(read_only=True)
     is_subscribed = serializers.SerializerMethodField(read_only=True)
     recipes = serializers.SerializerMethodField(read_only=True)
+    recipes_count = serializers.SerializerMethodField(read_only=True)
+    avatar = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Follow
         fields = (
             'email', 'id', 'username', 'first_name', 'last_name',
-            'is_subscribed', 'recipes', 'avatar')
+            'is_subscribed', 'recipes', 'recipes_count', 'avatar')
+
+    def get_is_subscribed(self, obj):
+        current_user = self.context.get('request').user
+        return Follow.objects.filter(
+            user=current_user, following=obj.following).exists()
 
     def get_recipes(self, obj):
         """Метод для получения рецептов подписанного пользователя"""
         recipes = Recipe.objects.filter(author=obj.following)
-        # Используем сериализатор для рецептов
-        return RecipeSerializer(recipes, many=True).data
+        return RecipeShortSerializer(
+            recipes, many=True, context=self.context).data
+
+    def get_recipes_count(self, obj):
+        """Общее количество рецептов пользователя"""
+        return Recipe.objects.filter(author=obj.following).count()
 
     def get_avatar(self, obj):
         request = self.context.get('request')
@@ -146,7 +159,9 @@ class FollowSerializer(serializers.ModelSerializer):
             return request.build_absolute_uri(obj.following.avatar)
         return None
 
-    def get_is_subscribed(self, obj):
-        current_user = self.context.get('request').user
-        return Follow.objects.filter(
-            user=current_user, following=obj.following).exists()
+
+class RecipeShortSerializer(serializers.ModelSerializer):
+    """Свернутый сериализатор для рецептов"""
+    class Meta:
+        model = Recipe
+        fields = ['id', 'name', 'image', 'cooking_time']

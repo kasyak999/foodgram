@@ -52,12 +52,12 @@ class Recipe(PublishedModel):
     author = models.ForeignKey(
         User, on_delete=models.CASCADE,
         verbose_name='Автор публикации')
-    picture = models.ImageField(upload_to='images/', verbose_name='Картинка')
-    description = models.TextField(verbose_name='Текстовое описание')
+    image = models.ImageField(upload_to='images/', verbose_name='Картинка')
+    text = models.TextField(verbose_name='Текстовое описание')
     ingredients = models.ManyToManyField(
         'Ingredient', verbose_name='Ингредиенты')
     tags = models.ManyToManyField('Teg', verbose_name='Теги')
-    time_preparations = models.IntegerField(
+    cooking_time = models.IntegerField(
         verbose_name='Время приготовления', help_text='в минутах')
 
     class Meta:
@@ -86,7 +86,7 @@ class Teg(PublishedModel):
 
 class Ingredient(PublishedModel):
     """Ингредиент"""
-    quantity = models.IntegerField(verbose_name='Количество')
+    amount = models.IntegerField(verbose_name='Количество')
     measurement_unit = models.CharField(
         max_length=2, choices=WEIGHT_UNITS, default='кг',
         verbose_name='Единица измерения')

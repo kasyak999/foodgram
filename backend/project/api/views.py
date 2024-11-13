@@ -7,7 +7,7 @@ from .serializers import (
     UserRegistrationSerializer, UsersSerializer, UserAvatarSerializer,
     TegSerializer, RecipeSerializer, IngredientSerializer, FollowSerializer)
 from rest_framework.pagination import LimitOffsetPagination
-from .models import Teg, Recipe, Ingredient
+from .models import Teg, Recipe, Ingredient, Follow
 
 User = get_user_model()
 
@@ -50,6 +50,17 @@ class UsersViewSet(viewsets.ModelViewSet):
                 {"detail": "Аватар успешно удален"},
                 status=status.HTTP_204_NO_CONTENT)
 
+    @action(
+        detail=False, methods=['get'], url_path='subscriptions')
+    def user_Follow(self, request):
+        """users/subscriptions"""
+        follows = Follow.objects.filter(user=request.user)
+        paginator = LimitOffsetPagination()
+        paginated_follows = paginator.paginate_queryset(follows, request)
+        serializer = FollowSerializer(
+            paginated_follows, many=True, context={'request': request})
+        return paginator.get_paginated_response(serializer.data)
+
 
 class TegViewSet(viewsets.ReadOnlyModelViewSet):
     """Теги"""
@@ -73,16 +84,3 @@ class RecipeViewSet(viewsets.ModelViewSet):  # не готово
     permission_classes = [AllowAny]
     serializer_class = RecipeSerializer
     pagination_class = LimitOffsetPagination
-
-
-class FollowViewSet(
-    mixins.CreateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet
-):
-    serializer_class = FollowSerializer
-    pagination_class = LimitOffsetPagination
-
-    def get_queryset(self):
-        return self.request.user.follower.all()
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
