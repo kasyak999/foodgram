@@ -44,7 +44,7 @@ class UsersViewSet(viewsets.ModelViewSet):
                 user.avatar = serializer.validated_data.get('avatar')
                 user.save()
                 return Response(
-                    {'avatar': request.build_absolute_uri(user.avatar)})
+                    {'avatar': user.avatar.url})
             return Response(serializer.errors, status=400)
         if request.method == 'DELETE':
             user.avatar.delete()

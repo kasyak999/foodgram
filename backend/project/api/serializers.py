@@ -6,7 +6,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from .models import (
     MAX_LENGT_EMAIL, MAX_LENGT_USERNAME, Teg, Recipe, Ingredient, Follow,
     Favorite)
-from .validators import validate_username
+from .validators import validate_username, checking_avatar
 
 
 import base64
@@ -74,19 +74,7 @@ class UserAvatarSerializer(serializers.ModelSerializer):
         fields = ['avatar']
 
     def validate_avatar(self, value):
-        """Проверка валидности данных аватара (base64)"""
-        try:
-            format, imgstr = value.split(';base64,')
-            ext = format.split('/')[1]  # Получаем расширение файла
-            imgdata = base64.b64decode(imgstr)  # Декодируем base64 в байты
-
-            # Сохраняем изображение в виде файла
-            Image.open(BytesIO(imgdata))
-            file_name = f"avatar.{ext}"
-            content_file = ContentFile(imgdata, name=file_name)
-            return content_file
-        except (ValueError, TypeError, ValidationError):
-            raise serializers.ValidationError("Некорректный формат изображения.")
+        return checking_avatar(value)
 
 
 class TegSerializer(serializers.ModelSerializer):
@@ -98,6 +86,7 @@ class TegSerializer(serializers.ModelSerializer):
 
 class IngredientSerializer(serializers.ModelSerializer):
     """Серелизатор для вывода ингредиентов"""
+    # name = serializers.CharField(required=False)
 
     class Meta:
         model = Ingredient
@@ -106,11 +95,13 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 class RecipeSerializer(serializers.ModelSerializer):
     """Серелизатор для рецептов"""
-    tags = serializers.SerializerMethodField(read_only=True)
     author = UsersSerializer(read_only=True)
-    ingredients = IngredientSerializer(many=True, read_only=True)
-    tags = TegSerializer(many=True, read_only=True)
+    ingredients = IngredientSerializer(many=True)
+    # tags = serializers.PrimaryKeyRelatedField(
+    #     queryset=Teg.objects.all(), many=True)
+    tags = TegSerializer(many=True)
     is_favorited = serializers.SerializerMethodField(read_only=True)
+    image = serializers.ImageField()
 
     class Meta:
         model = Recipe
