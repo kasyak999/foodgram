@@ -8,6 +8,7 @@ from .serializers import (
     TegSerializer, RecipeSerializer, IngredientSerializer, FollowSerializer)
 from rest_framework.pagination import LimitOffsetPagination
 from .models import Teg, Recipe, Ingredient, Follow
+from django.shortcuts import get_object_or_404
 
 User = get_user_model()
 
@@ -53,13 +54,36 @@ class UsersViewSet(viewsets.ModelViewSet):
     @action(
         detail=False, methods=['get'], url_path='subscriptions')
     def user_Follow(self, request):
-        """users/subscriptions"""
+        """Список подписок"""
         follows = Follow.objects.filter(user=request.user)
         paginator = LimitOffsetPagination()
         paginated_follows = paginator.paginate_queryset(follows, request)
         serializer = FollowSerializer(
             paginated_follows, many=True, context={'request': request})
         return paginator.get_paginated_response(serializer.data)
+
+    @action(detail=True, methods=['post', 'delete'], url_path='subscribe')
+    def subscribe(self, request, pk=None):
+        """Подписаться или отписаться от пользователя"""
+        result = get_object_or_404(User, pk=pk)
+        if request.method == 'POST':
+            if result == request.user or \
+                Follow.objects.filter(
+                    user=request.user, following=result).exists():
+                return Response(
+                    {"detail": "Ошибка подписки"},
+                    status=status.HTTP_400_BAD_REQUEST)
+            follow = Follow.objects.create(user=request.user, following=result)
+            serializer = FollowSerializer(follow, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if request.method == 'DELETE':
+            follow = get_object_or_404(
+                Follow, user=request.user, following=result)
+            follow.delete()
+            return Response(
+                {"detail": "Вы успешно отписались от пользователя."},
+                status=status.HTTP_204_NO_CONTENT
+            )
 
 
 class TegViewSet(viewsets.ReadOnlyModelViewSet):
