@@ -4,7 +4,8 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.tokens import AccessToken
 from .models import (
-    MAX_LENGT_EMAIL, MAX_LENGT_USERNAME, Teg, Recipe, Ingredient, Follow)
+    MAX_LENGT_EMAIL, MAX_LENGT_USERNAME, Teg, Recipe, Ingredient, Follow,
+    Favorite)
 from .validators import validate_username
 
 
@@ -109,12 +110,17 @@ class RecipeSerializer(serializers.ModelSerializer):
     author = UsersSerializer(read_only=True)
     ingredients = IngredientSerializer(many=True, read_only=True)
     tags = TegSerializer(many=True, read_only=True)
+    is_favorited = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Recipe
         fields = [
-            'id', 'tags', 'author', 'ingredients', 'name', 'image',
-            'text', 'cooking_time']
+            'id', 'tags', 'author', 'ingredients', 'is_favorited', 'name',
+            'image', 'text', 'cooking_time']
+
+    def get_is_favorited(self, obj):
+        current_user = self.context.get('request').user
+        return Favorite.objects.filter(user=current_user, recipe=obj).exists()
 
 
 class FollowSerializer(serializers.ModelSerializer):

@@ -5,9 +5,10 @@ from rest_framework import status, viewsets, mixins
 from rest_framework.decorators import action
 from .serializers import (
     UserRegistrationSerializer, UsersSerializer, UserAvatarSerializer,
-    TegSerializer, RecipeSerializer, IngredientSerializer, FollowSerializer)
+    TegSerializer, RecipeSerializer, IngredientSerializer, FollowSerializer,
+    RecipeShortSerializer)
 from rest_framework.pagination import LimitOffsetPagination
-from .models import Teg, Recipe, Ingredient, Follow
+from .models import Teg, Recipe, Ingredient, Follow, Favorite
 from django.shortcuts import get_object_or_404
 
 User = get_user_model()
@@ -66,10 +67,9 @@ class UsersViewSet(viewsets.ModelViewSet):
     def subscribe(self, request, pk=None):
         """Подписаться или отписаться от пользователя"""
         result = get_object_or_404(User, pk=pk)
+        follow = Follow.objects.filter(user=request.user, following=result)
         if request.method == 'POST':
-            if result == request.user or \
-                Follow.objects.filter(
-                    user=request.user, following=result).exists():
+            if result == request.user or follow.exists():
                 return Response(
                     {"detail": "Ошибка подписки"},
                     status=status.HTTP_400_BAD_REQUEST)
@@ -77,12 +77,15 @@ class UsersViewSet(viewsets.ModelViewSet):
             serializer = FollowSerializer(follow, context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if request.method == 'DELETE':
-            follow = get_object_or_404(
-                Follow, user=request.user, following=result)
-            follow.delete()
+            if follow.exists():
+                follow.delete()
+                return Response(
+                    {"detail": "Вы успешно отписались от пользователя."},
+                    status=status.HTTP_204_NO_CONTENT
+                )
             return Response(
-                {"detail": "Вы успешно отписались от пользователя."},
-                status=status.HTTP_204_NO_CONTENT
+                {"detail": "Вы не подписаны на этого пользователя."},
+                status=status.HTTP_400_BAD_REQUEST
             )
 
 
@@ -108,3 +111,31 @@ class RecipeViewSet(viewsets.ModelViewSet):  # не готово
     permission_classes = [AllowAny]
     serializer_class = RecipeSerializer
     pagination_class = LimitOffsetPagination
+
+    @action(
+        detail=True, methods=['post', 'delete'], url_path='favorite',
+        permission_classes=[IsAuthenticated])
+    def favorite(self, request, pk=None):
+        """Добавление и удаление из избраного"""
+        result = get_object_or_404(Recipe, pk=pk)
+        favorite = Favorite.objects.filter(user=request.user, recipe=result)
+        if request.method == 'POST':
+            if favorite.exists():
+                return Response(
+                    {"detail": "Рецепт уже добавлен в избранное."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            Favorite.objects.create(user=request.user, recipe=result)
+            serializer = RecipeShortSerializer(result)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if request.method == 'DELETE':
+            if favorite.exists():
+                favorite.delete()
+                return Response(
+                    {"detail": "Рецепт успешно удален из избранного."},
+                    status=status.HTTP_204_NO_CONTENT
+                )
+            return Response(
+                {"detail": "Рецепт отсутствует в избранном."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
