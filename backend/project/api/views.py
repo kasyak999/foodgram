@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 from .serializers import (
     UserRegistrationSerializer, UsersSerializer, UserAvatarSerializer,
     TegSerializer, RecipeSerializer, IngredientSerializer, FollowSerializer,
-    RecipeShortSerializer)
+    RecipeShortSerializer, AddRecipeSerializer)
 from rest_framework.pagination import LimitOffsetPagination
 from .models import Teg, Recipe, Ingredient, Follow, Favorite
 from django.shortcuts import get_object_or_404
@@ -33,7 +33,8 @@ class UsersViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(
-        detail=False, methods=['put', 'delete'], url_path='me/avatar')
+        detail=False, methods=['put', 'delete'], url_path='me/avatar',
+        permission_classes=[IsAuthenticated])
     def avatar(self, request):
         """Аватар пользователя"""
         user = request.user
@@ -108,9 +109,22 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):  # не готово
     """Рецепты"""
     queryset = Recipe.objects.all()
-    permission_classes = [AllowAny]
     serializer_class = RecipeSerializer
     pagination_class = LimitOffsetPagination
+    http_method_names = ['get', 'post', 'patch', 'delete']
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return RecipeSerializer
+        return AddRecipeSerializer
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
     @action(
         detail=True, methods=['post', 'delete'], url_path='favorite',
