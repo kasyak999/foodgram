@@ -133,15 +133,17 @@ class RecipeSerializer(serializers.ModelSerializer):
         return RecipeIngredientSerializer(result, many=True).data
 
 
-# class IngredientAmountSerializer(serializers.Serializer):
-#     """Сериализатор для указания ингредиента и его количества"""
-#     id = serializers.IntegerField()
-#     amount = serializers.IntegerField()
+class AddRecipeIngredientSerializer(serializers.Serializer):
+    """Сериализатор для добавления ингредиентов в рецепт"""
+    id = serializers.IntegerField()
+    amount = serializers.IntegerField()
 
 
 class AddRecipeSerializer(serializers.ModelSerializer):
     """Серелизатор для добавления рецептов"""
     ingredients = RecipeIngredientSerializer(many=True)
+    # ingredients = serializers.SerializerMethodField(read_only=True)
+    # ingredients = AddRecipeIngredientSerializer()
     image = Base64ImageField()
 
     class Meta:
@@ -149,6 +151,10 @@ class AddRecipeSerializer(serializers.ModelSerializer):
         fields = [
             'ingredients', 'tags', 'image', 'name', 'text', 'name',
             'cooking_time']
+
+    def get_ingredients(self, obj):
+        result = RecipeIngredient.objects.filter(recipe=obj)
+        return RecipeIngredientSerializer(result, many=True).data
 
     def to_representation(self, instance):
         recipe_serializer = RecipeSerializer(instance, context=self.context)
