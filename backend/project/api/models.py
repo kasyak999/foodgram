@@ -86,7 +86,7 @@ class Teg(PublishedModel):
 
 class Ingredient(PublishedModel):
     """Ингредиент"""
-    amount = models.IntegerField(verbose_name='Количество')
+    # amount = models.IntegerField(verbose_name='Количество')
     measurement_unit = models.CharField(
         max_length=2, choices=WEIGHT_UNITS, default='кг',
         verbose_name='Единица измерения')
@@ -123,6 +123,7 @@ class Follow(models.Model):
 
 
 class Favorite(models.Model):
+    """Избраные рецепты"""
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, verbose_name='Подписчик')
     recipe = models.ForeignKey(

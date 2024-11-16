@@ -90,7 +90,6 @@ class TegSerializer(serializers.ModelSerializer):
 
 class IngredientSerializer(serializers.ModelSerializer):
     """Серелизатор для вывода ингредиентов"""
-    # name = serializers.CharField(required=False)
 
     class Meta:
         model = Ingredient
@@ -152,7 +151,6 @@ class AddRecipeSerializer(serializers.ModelSerializer):
         return recipe
 
     def update(self, instance, validated_data):
-        # Обновляем только те поля, которые есть в validated_data
         if 'name' in validated_data:
             instance.name = validated_data['name']
         if 'text' in validated_data:
@@ -162,19 +160,18 @@ class AddRecipeSerializer(serializers.ModelSerializer):
         if 'image' in validated_data:
             instance.image = validated_data['image']
 
-        # Обновляем теги, если они присутствуют
         if 'tags' in validated_data:
             tags_data = validated_data['tags']
             instance.tags.set(tags_data)
 
-        # Обновляем ингредиенты, если они присутствуют
         if 'ingredients' in validated_data:
             ingredients_data = validated_data['ingredients']
             instance.ingredients.clear()
             for ingredient_data in ingredients_data:
                 ingredient = Ingredient.objects.get(id=ingredient_data['id'])
                 instance.ingredients.add(
-                    ingredient, through_defaults={'amount': ingredient_data['amount']}
+                    ingredient, through_defaults={
+                        'amount': ingredient_data['amount']}
                 )
 
         return instance
