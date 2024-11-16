@@ -5,7 +5,7 @@ from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.tokens import AccessToken
 from .models import (
     MAX_LENGT_EMAIL, MAX_LENGT_USERNAME, Teg, Recipe, Ingredient, Follow,
-    Favorite)
+    Favorite, RecipeIngredient)
 from .validators import validate_username, checking_avatar
 
 
@@ -96,10 +96,22 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class RecipeIngredientSerializer(serializers.ModelSerializer):
+    """Сериализатор для ингредиентов и количества"""
+    id = serializers.IntegerField(source='ingredient.id')
+    name = serializers.CharField(source='ingredient.name')
+    measurement_unit = serializers.CharField(
+        source='ingredient.measurement_unit')
+
+    class Meta:
+        model = RecipeIngredient
+        fields = ['id', 'name', 'measurement_unit', 'amount']
+
+
 class RecipeSerializer(serializers.ModelSerializer):
     """Серелизатор для списка рецептов"""
     author = UsersSerializer(read_only=True)
-    ingredients = IngredientSerializer(many=True)
+    ingredients = serializers.SerializerMethodField(read_only=True)
     tags = TegSerializer(many=True)
     is_favorited = serializers.SerializerMethodField(read_only=True)
     image = serializers.ImageField()
@@ -116,16 +128,20 @@ class RecipeSerializer(serializers.ModelSerializer):
             return False
         return Favorite.objects.filter(user=request.user, recipe=obj).exists()
 
+    def get_ingredients(self, obj):
+        result = RecipeIngredient.objects.filter(recipe=obj)
+        return RecipeIngredientSerializer(result, many=True).data
 
-class IngredientAmountSerializer(serializers.Serializer):
-    """Сериализатор для указания ингредиента и его количества"""
-    id = serializers.IntegerField()
-    amount = serializers.IntegerField()
+
+# class IngredientAmountSerializer(serializers.Serializer):
+#     """Сериализатор для указания ингредиента и его количества"""
+#     id = serializers.IntegerField()
+#     amount = serializers.IntegerField()
 
 
 class AddRecipeSerializer(serializers.ModelSerializer):
     """Серелизатор для добавления рецептов"""
-    ingredients = IngredientAmountSerializer(many=True)
+    ingredients = RecipeIngredientSerializer(many=True)
     image = Base64ImageField()
 
     class Meta:

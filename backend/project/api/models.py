@@ -54,8 +54,10 @@ class Recipe(PublishedModel):
         verbose_name='Автор публикации')
     image = models.ImageField(upload_to='images/', verbose_name='Картинка')
     text = models.TextField(verbose_name='Текстовое описание')
-    ingredients = models.ManyToManyField(
-        'Ingredient', verbose_name='Ингредиенты')
+    # ingredients = models.ManyToManyField(
+    #     'Ingredient', through='RecipeIngredient', verbose_name='Ингредиенты')
+    # ingredients = models.ManyToManyField(
+    #     'RecipeIngredient', verbose_name='Ингредиенты')
     tags = models.ManyToManyField('Teg', verbose_name='Теги')
     cooking_time = models.IntegerField(
         verbose_name='Время приготовления', help_text='в минутах')
@@ -86,7 +88,6 @@ class Teg(PublishedModel):
 
 class Ingredient(PublishedModel):
     """Ингредиент"""
-    # amount = models.IntegerField(verbose_name='Количество')
     measurement_unit = models.CharField(
         max_length=2, choices=WEIGHT_UNITS, default='кг',
         verbose_name='Единица измерения')
@@ -95,6 +96,23 @@ class Ingredient(PublishedModel):
         """Перевод модели"""
         verbose_name = 'ингредиент'
         verbose_name_plural = 'Ингредиенты'
+
+
+class RecipeIngredient(models.Model):
+    """Количество ингредиентов"""
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE, verbose_name='Рецепт')
+    ingredient = models.ForeignKey(
+        Ingredient, on_delete=models.CASCADE, verbose_name='Ингредиент')
+    amount = models.IntegerField(verbose_name='Количество')
+
+    class Meta:
+        """Перевод модели"""
+        verbose_name = 'количество ингредиента'
+        verbose_name_plural = 'Количество ингредиентов'
+
+    def __str__(self):
+        return f'{self.ingredient.name}'
 
 
 class Follow(models.Model):
