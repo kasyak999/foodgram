@@ -2,20 +2,15 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from rest_framework_simplejwt.tokens import AccessToken
 from .models import (
     MAX_LENGT_EMAIL, MAX_LENGT_USERNAME, Teg, Recipe, Ingredient, Follow,
-    Favorite, RecipeIngredient)
+    Favorite, RecipeIngredient, Basket)
 from .validators import validate_username
 
-
-import base64
-from io import BytesIO
-from django.core.files.base import ContentFile
-from PIL import Image
 from django.core.exceptions import ValidationError
 from drf_extra_fields.fields import Base64ImageField
 from pprint import pprint
+
 
 User = get_user_model()
 
@@ -236,3 +231,15 @@ class RecipeShortSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ['id', 'name', 'image', 'cooking_time']
+
+
+#  ------------------------------------------------
+
+
+class BasketSerializer(serializers.ModelSerializer):
+    recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
+
+    class Meta:
+        model = Basket
+        fields = ['id', 'user', 'recipe']
+        read_only_fields = ['user']

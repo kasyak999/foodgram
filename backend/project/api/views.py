@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework import status, viewsets, mixins
 from rest_framework.decorators import action
 from .serializers import (
@@ -10,6 +10,8 @@ from .serializers import (
 from rest_framework.pagination import LimitOffsetPagination
 from .models import Teg, Recipe, Ingredient, Follow, Favorite
 from django.shortcuts import get_object_or_404
+from .permissions import IsOwner
+
 
 User = get_user_model()
 
@@ -113,16 +115,12 @@ class RecipeViewSet(viewsets.ModelViewSet):  # не готово
     serializer_class = RecipeSerializer
     pagination_class = LimitOffsetPagination
     http_method_names = ['get', 'post', 'patch', 'delete']
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwner]
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
             return RecipeSerializer
         return AddRecipeSerializer
-
-    def get_permissions(self):
-        if self.action in ['list', 'retrieve']:
-            return [AllowAny()]
-        return [IsAuthenticated()]
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -154,3 +152,10 @@ class RecipeViewSet(viewsets.ModelViewSet):  # не готово
                 {"detail": "Рецепт отсутствует в избранном."},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+        # http://localhost/api/recipes/{id}/get-link/
+        @action(
+            detail=True, methods=['retrieve'], url_path='get-link',
+            permission_classes=[IsAuthenticated])
+        def get_link(self, request, pk=None):
+            pass

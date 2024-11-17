@@ -54,10 +54,6 @@ class Recipe(PublishedModel):
         verbose_name='Автор публикации')
     image = models.ImageField(upload_to='images/', verbose_name='Картинка')
     text = models.TextField(verbose_name='Текстовое описание')
-    # ingredients = models.ManyToManyField(
-    #     'Ingredient', through='RecipeIngredient', verbose_name='Ингредиенты')
-    # ingredients = models.ManyToManyField(
-    #     'RecipeIngredient', verbose_name='Ингредиенты')
     tags = models.ManyToManyField('Teg', verbose_name='Теги')
     cooking_time = models.IntegerField(
         verbose_name='Время приготовления', help_text='в минутах')
@@ -155,3 +151,23 @@ class Favorite(models.Model):
 
     def __str__(self):
         return f'Подписчик {self.user}'
+
+
+class Basket(models.Model):
+    """Список покупок или корзина"""
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='shopping_cart',
+        verbose_name='Пользователь')
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE,related_name='in_shopping_cart',
+        verbose_name='Рецепт')
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'recipe'], name='unique_shopping_cart')
+        ]
+        verbose_name = 'список покупок'
+        verbose_name_plural = 'Списки покупок'
+
+    def __str__(self):
+        return f'{self.user.username} — {self.recipe.name}'
