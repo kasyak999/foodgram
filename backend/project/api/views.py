@@ -6,11 +6,15 @@ from rest_framework.decorators import action
 from .serializers import (
     UserRegistrationSerializer, UsersSerializer, UserAvatarSerializer,
     TegSerializer, RecipeSerializer, IngredientSerializer, FollowSerializer,
-    RecipeShortSerializer, AddRecipeSerializer)
+    RecipeShortSerializer, AddRecipeSerializer, BasketSerializer)
 from rest_framework.pagination import LimitOffsetPagination
-from .models import Teg, Recipe, Ingredient, Follow, Favorite
+from .models import (
+    Teg, Recipe, Ingredient, Follow, Favorite, Basket, RecipeIngredient)
 from django.shortcuts import get_object_or_404
 from .permissions import IsOwner
+from django.http import HttpResponse
+from pprint import pprint
+from rest_framework.decorators import api_view, permission_classes
 
 
 User = get_user_model()
@@ -153,9 +157,71 @@ class RecipeViewSet(viewsets.ModelViewSet):  # не готово
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # http://localhost/api/recipes/{id}/get-link/
-        @action(
-            detail=True, methods=['retrieve'], url_path='get-link',
-            permission_classes=[IsAuthenticated])
-        def get_link(self, request, pk=None):
-            pass
+    # # http://localhost/api/recipes/{id}/get-link/
+    # @action(
+    #     detail=True, methods=['retrieve'], url_path='get-link',
+    #     permission_classes=[IsAuthenticated])
+    # def get_link(self, request, pk=None):
+    #     pass
+
+    # http://localhost/api/recipes/{id}/shopping_cart/
+    @action(
+        detail=True, methods=['post', 'delete'], url_path='shopping_cart',
+        permission_classes=[IsAuthenticated])
+    def shopping_cart(self, request, pk=None):
+        """Добавление в список покупок"""
+        result = get_object_or_404(Recipe, pk=pk)
+        basket = Basket.objects.filter(user=request.user, recipe=result)
+        if request.method == 'POST':
+            if basket.exists():
+                return Response(
+                    {"detail": "Рецепт уже добавлен."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            Basket.objects.create(user=request.user, recipe=result)
+            serializer = RecipeShortSerializer(result)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if request.method == 'DELETE':
+            if basket.exists():
+                basket.delete()
+                return Response(
+                    {"detail": "Рецепт успешно удален."},
+                    status=status.HTTP_204_NO_CONTENT
+                )
+            return Response(
+                {"detail": "Рецепт отсутствует."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+@api_view(['GET'])
+# @permission_classes([AllowAny])
+def download_shopping_list(request):
+    basket = Basket.objects.filter(user=request.user)
+    ingredients = {}
+
+    for result in basket:
+        recipe_ingredients = RecipeIngredient.objects.filter(
+            recipe=result.recipe)
+
+        for ingredient in recipe_ingredients:
+            name = ingredient.ingredient.name
+            measurement_unit = ingredient.ingredient.measurement_unit
+            amount = ingredient.amount
+
+            if name in ingredients:
+                ingredients[name]['amount'] += amount
+            else:
+                ingredients[name] = {
+                    'measurement_unit': measurement_unit,
+                    'amount': amount,
+                }
+
+    list_text = "Список покупок:\n"
+    for name, value in ingredients.items():
+        list_text += (
+            f"- {name}: {value['amount']} {value['measurement_unit']}.\n")
+
+    response = HttpResponse(list_text, content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename="shopping_list.txt"'
+    return response
