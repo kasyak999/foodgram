@@ -6,7 +6,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from .models import (
     MAX_LENGT_EMAIL, MAX_LENGT_USERNAME, Teg, Recipe, Ingredient, Follow,
     Favorite, RecipeIngredient)
-from .validators import validate_username, checking_avatar
+from .validators import validate_username
 
 
 import base64
@@ -71,14 +71,11 @@ class UsersSerializer(UserRegistrationSerializer):
 
 class UserAvatarSerializer(serializers.ModelSerializer):
     """Сериализатор для аватара пользователя"""
-    avatar = serializers.CharField(write_only=True, required=False)
+    avatar = Base64ImageField()
 
     class Meta:
         model = User
         fields = ['avatar']
-
-    def validate_avatar(self, value):
-        return checking_avatar(value)
 
 
 class FollowSerializer(serializers.ModelSerializer):

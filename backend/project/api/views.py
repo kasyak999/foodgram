@@ -26,7 +26,8 @@ class UsersViewSet(viewsets.ModelViewSet):
         return UsersSerializer
 
     @action(
-        detail=False, methods=['get'], url_path='me')
+        detail=False, methods=['get'], url_path='me',
+        permission_classes=[IsAuthenticated])
     def user_information(self, request):
         """users/me"""
         serializer = self.get_serializer(request.user)
