@@ -193,35 +193,36 @@ class RecipeViewSet(viewsets.ModelViewSet):  # не готово
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+    @action(
+        detail=False, methods=['get'], url_path='download_shopping_cart',
+        permission_classes=[IsAuthenticated])
+    def download_basket(self, request):
+        """Получение файла списка покупок"""
+        basket = Basket.objects.filter(user=self.request.user)
+        ingredients = {}
 
-@api_view(['GET'])
-# @permission_classes([AllowAny])
-def download_shopping_list(request):
-    basket = Basket.objects.filter(user=request.user)
-    ingredients = {}
+        for result in basket:
+            recipe_ingredients = RecipeIngredient.objects.filter(
+                recipe=result.recipe)
 
-    for result in basket:
-        recipe_ingredients = RecipeIngredient.objects.filter(
-            recipe=result.recipe)
+            for ingredient in recipe_ingredients:
+                name = ingredient.ingredient.name
+                measurement_unit = ingredient.ingredient.measurement_unit
+                amount = ingredient.amount
 
-        for ingredient in recipe_ingredients:
-            name = ingredient.ingredient.name
-            measurement_unit = ingredient.ingredient.measurement_unit
-            amount = ingredient.amount
+                if name in ingredients:
+                    ingredients[name]['amount'] += amount
+                else:
+                    ingredients[name] = {
+                        'measurement_unit': measurement_unit,
+                        'amount': amount,
+                    }
 
-            if name in ingredients:
-                ingredients[name]['amount'] += amount
-            else:
-                ingredients[name] = {
-                    'measurement_unit': measurement_unit,
-                    'amount': amount,
-                }
-
-    list_text = "Список покупок:\n"
-    for name, value in ingredients.items():
-        list_text += (
-            f"- {name}: {value['amount']} {value['measurement_unit']}.\n")
-
-    response = HttpResponse(list_text, content_type='text/plain')
-    response['Content-Disposition'] = 'attachment; filename="shopping_list.txt"'
-    return response
+        list_text = "Список покупок:<ul>"
+        for name, value in ingredients.items():
+            list_text += (
+                f"<ul> {name}: {value['amount']} {value['measurement_unit']}.</ul>")
+        list_text += '</ul>'
+        response = HttpResponse(list_text, content_type='text/plain')
+        response['Content-Disposition'] = 'attachment; filename="shopping_list.txt"'
+        return response
