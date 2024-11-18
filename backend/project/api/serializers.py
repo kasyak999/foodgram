@@ -6,7 +6,8 @@ from .models import (
     Favorite, RecipeIngredient, Basket)
 from .validators import validate_username
 from drf_extra_fields.fields import Base64ImageField
-
+from django.shortcuts import get_object_or_404
+from django.core.exceptions import ValidationError
 
 User = get_user_model()
 
@@ -54,7 +55,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'email', 'id', 'username', 'first_name', 'last_name', 'avatar')
+            'email', 'id', 'username', 'first_name', 'last_name')
 
 
 class UsersSerializer(serializers.ModelSerializer):
@@ -218,12 +219,13 @@ class AddRecipeSerializer(serializers.ModelSerializer):
             'ingredients', 'tags', 'image', 'name', 'text', 'name',
             'cooking_time', 'link']
 
-    def validate(self, data):
-        if 'ingredients' not in data:
-            raise serializers.ValidationError({
-                "ingredients": "Поле 'ingredients' является обязательным."
-            })
-        return data
+    def validate_ingredients(self, value):
+        if len(value) < 2:
+            raise ValidationError("Не может быть только один игридиент")
+        for ingredient in value:
+            if not Ingredient.objects.filter(id=ingredient['id']):
+                raise ValidationError("Ингредиент с таким ID не существует.")
+        return value
 
     def to_representation(self, instance):
         recipe_serializer = RecipeSerializer(instance, context=self.context)
