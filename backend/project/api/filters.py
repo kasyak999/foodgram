@@ -1,5 +1,5 @@
 import django_filters
-from .models import Recipe, Favorite, Basket
+from .models import Recipe, Favorite, Basket, Teg
 
 
 class RecipeFilter(django_filters.FilterSet):
@@ -9,6 +9,13 @@ class RecipeFilter(django_filters.FilterSet):
         method='filter', label='Is Favorited')
     is_in_shopping_cart = django_filters.BooleanFilter(
         method='filter', label='is in shopping cart')
+    tags = django_filters.ModelMultipleChoiceFilter(
+        queryset=Teg.objects.all(),
+        field_name='tags__name',
+        to_field_name='name',
+        widget=django_filters.widgets.CSVWidget(),  # Преобразует строку с ID в список
+        # label='Теги'
+    )
 
     class Meta:
         model = Recipe

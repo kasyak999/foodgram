@@ -118,6 +118,7 @@ class RecipeViewSet(viewsets.ModelViewSet):  # не готово
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     pagination_class = LimitOffsetPagination
+    # pagination_class = None
     http_method_names = ['get', 'post', 'patch', 'delete']
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwner]
     filter_backends = (DjangoFilterBackend,)
