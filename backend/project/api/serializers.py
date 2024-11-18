@@ -1,15 +1,12 @@
 from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from .models import (
     MAX_LENGT_EMAIL, MAX_LENGT_USERNAME, Teg, Recipe, Ingredient, Follow,
     Favorite, RecipeIngredient, Basket)
 from .validators import validate_username
-
 from django.core.exceptions import ValidationError
 from drf_extra_fields.fields import Base64ImageField
-from pprint import pprint
 
 
 User = get_user_model()
@@ -209,7 +206,7 @@ class AddRecipeSerializer(serializers.ModelSerializer):
 
         if not recipe.link:
             recipe.generate_link()
-            recipe.save()  # Сохраняем объект, чтобы обновить его в базе данных
+            recipe.save()
         recipe.tags.set(tags_data)
         for ingredient_data in ingredients_data:
             ingredient = Ingredient.objects.get(id=ingredient_data['id'])
@@ -245,12 +242,3 @@ class RecipeShortSerializer(serializers.ModelSerializer):
 
 
 #  ------------------------------------------------
-
-
-class BasketSerializer(serializers.ModelSerializer):
-    recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
-
-    class Meta:
-        model = Basket
-        fields = ['id', 'user', 'recipe']
-        read_only_fields = ['user']

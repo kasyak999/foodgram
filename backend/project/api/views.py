@@ -1,20 +1,19 @@
 from django.contrib.auth import get_user_model
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
-from rest_framework import status, viewsets, mixins
+from rest_framework.permissions import (
+    IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly)
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from .serializers import (
     UserRegistrationSerializer, UsersSerializer, UserAvatarSerializer,
     TegSerializer, RecipeSerializer, IngredientSerializer, FollowSerializer,
-    RecipeShortSerializer, AddRecipeSerializer, BasketSerializer)
+    RecipeShortSerializer, AddRecipeSerializer)
 from rest_framework.pagination import LimitOffsetPagination
 from .models import (
     Teg, Recipe, Ingredient, Follow, Favorite, Basket, RecipeIngredient)
 from django.shortcuts import get_object_or_404, redirect
 from .permissions import IsOwner
 from django.http import HttpResponse
-from pprint import pprint
-# from rest_framework.decorators import api_view, permission_classes
 
 
 User = get_user_model()
@@ -157,7 +156,6 @@ class RecipeViewSet(viewsets.ModelViewSet):  # не готово
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-    # http://localhost/api/recipes/{id}/get-link/
     @action(
         detail=True, methods=['get'], url_path='get-link',
         permission_classes=[IsAuthenticated])
@@ -168,7 +166,6 @@ class RecipeViewSet(viewsets.ModelViewSet):  # не готово
             status=status.HTTP_200_OK
         )
 
-    # http://localhost/api/recipes/{id}/shopping_cart/
     @action(
         detail=True, methods=['post', 'delete'], url_path='shopping_cart',
         permission_classes=[IsAuthenticated])
