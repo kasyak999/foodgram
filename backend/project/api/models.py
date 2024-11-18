@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.contrib.auth import get_user_model
+import uuid
 
 
 MAX_LENGT_EMAIL = 254
@@ -57,6 +58,13 @@ class Recipe(PublishedModel):
     tags = models.ManyToManyField('Teg', verbose_name='Теги')
     cooking_time = models.IntegerField(
         verbose_name='Время приготовления', help_text='в минутах')
+    link = models.CharField(
+        max_length=10, unique=True, blank=True, null=True,
+        verbose_name='Ссылка')
+
+    def generate_link(self):
+        if not self.link:
+            self.link = uuid.uuid4().hex[:5]
 
     class Meta:
         """Перевод модели"""

@@ -10,11 +10,11 @@ from .serializers import (
 from rest_framework.pagination import LimitOffsetPagination
 from .models import (
     Teg, Recipe, Ingredient, Follow, Favorite, Basket, RecipeIngredient)
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from .permissions import IsOwner
 from django.http import HttpResponse
 from pprint import pprint
-from rest_framework.decorators import api_view, permission_classes
+# from rest_framework.decorators import api_view, permission_classes
 
 
 User = get_user_model()
@@ -157,12 +157,16 @@ class RecipeViewSet(viewsets.ModelViewSet):  # не готово
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-    # # http://localhost/api/recipes/{id}/get-link/
-    # @action(
-    #     detail=True, methods=['retrieve'], url_path='get-link',
-    #     permission_classes=[IsAuthenticated])
-    # def get_link(self, request, pk=None):
-    #     pass
+    # http://localhost/api/recipes/{id}/get-link/
+    @action(
+        detail=True, methods=['get'], url_path='get-link',
+        permission_classes=[IsAuthenticated])
+    def get_link(self, request, pk=None):
+        result = get_object_or_404(Recipe, pk=pk)
+        return Response(
+            {"short-link": request.build_absolute_uri(f"/s/{result.link}")},
+            status=status.HTTP_200_OK
+        )
 
     # http://localhost/api/recipes/{id}/shopping_cart/
     @action(
@@ -225,3 +229,9 @@ class RecipeViewSet(viewsets.ModelViewSet):  # не готово
         response = HttpResponse(list_text, content_type='text/plain')
         response['Content-Disposition'] = 'attachment; filename="list.txt"'
         return response
+
+
+def short_link(request, link):
+    """Короткая ссылка"""
+    recipe = get_object_or_404(Recipe, link=link)
+    return redirect('recipes-detail', pk=recipe.id)

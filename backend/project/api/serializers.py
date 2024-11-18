@@ -189,7 +189,7 @@ class AddRecipeSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = [
             'ingredients', 'tags', 'image', 'name', 'text', 'name',
-            'cooking_time']
+            'cooking_time', 'link']
 
     def to_representation(self, instance):
         recipe_serializer = RecipeSerializer(instance, context=self.context)
@@ -199,6 +199,10 @@ class AddRecipeSerializer(serializers.ModelSerializer):
         ingredients_data = validated_data.pop('ingredients', [])
         tags_data = validated_data.pop('tags', [])
         recipe = super().create(validated_data)
+
+        if not recipe.link:
+            recipe.generate_link()
+            recipe.save()  # Сохраняем объект, чтобы обновить его в базе данных
         recipe.tags.set(tags_data)
         for ingredient_data in ingredients_data:
             ingredient = Ingredient.objects.get(id=ingredient_data['id'])
