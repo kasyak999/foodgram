@@ -13,8 +13,8 @@ class RecipeFilter(django_filters.FilterSet):
         queryset=Teg.objects.all(),
         field_name='tags__name',
         to_field_name='name',
-        widget=django_filters.widgets.CSVWidget(),  # Преобразует строку с ID в список
-        # label='Теги'
+        widget=django_filters.widgets.CSVWidget(),
+        label='Теги'
     )
 
     class Meta:
