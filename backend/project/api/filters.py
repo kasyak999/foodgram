@@ -11,9 +11,9 @@ class RecipeFilter(django_filters.FilterSet):
         method='filter', label='is in shopping cart')
     tags = django_filters.ModelMultipleChoiceFilter(
         queryset=Teg.objects.all(),
-        field_name='tags',
-        to_field_name='id',
-        widget=django_filters.widgets.CSVWidget(),
+        field_name='tags__slug',
+        to_field_name='slug',
+        # widget=django_filters.widgets.CSVWidget(),
         label='Теги'
     )
 

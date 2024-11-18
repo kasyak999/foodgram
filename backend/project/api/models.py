@@ -105,7 +105,7 @@ class Ingredient(PublishedModel):
 class RecipeIngredient(models.Model):
     """Количество ингредиентов"""
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, verbose_name='Рецепт')
+        Recipe, on_delete=models.CASCADE, verbose_name='Рецепт', blank=False)
     ingredient = models.ForeignKey(
         Ingredient, on_delete=models.CASCADE, verbose_name='Ингредиент')
     amount = models.IntegerField(verbose_name='Количество')

@@ -64,8 +64,8 @@ class UsersSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'email', 'id', 'username', 'first_name', 'last_name', 'avatar',
-            'is_subscribed')
+            'email', 'id', 'username', 'first_name', 'last_name',
+            'is_subscribed', 'avatar')
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
@@ -206,7 +206,10 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 class AddRecipeSerializer(serializers.ModelSerializer):
     """Серелизатор для добавления рецептов"""
-    ingredients = AddRecipeIngredientSerializer(many=True)
+    ingredients = AddRecipeIngredientSerializer(
+        many=True, min_length=1, error_messages={
+            "min_length": "Список ингредиентов не должен быть пустым."
+        })
     image = Base64ImageField()
 
     class Meta:
@@ -214,6 +217,13 @@ class AddRecipeSerializer(serializers.ModelSerializer):
         fields = [
             'ingredients', 'tags', 'image', 'name', 'text', 'name',
             'cooking_time', 'link']
+
+    def validate(self, data):
+        if 'ingredients' not in data:
+            raise serializers.ValidationError({
+                "ingredients": "Поле 'ingredients' является обязательным."
+            })
+        return data
 
     def to_representation(self, instance):
         recipe_serializer = RecipeSerializer(instance, context=self.context)
