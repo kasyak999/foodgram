@@ -5,7 +5,6 @@ from .models import (
     MAX_LENGT_EMAIL, MAX_LENGT_USERNAME, Teg, Recipe, Ingredient, Follow,
     Favorite, RecipeIngredient, Basket)
 from .validators import validate_username
-from django.core.exceptions import ValidationError
 from drf_extra_fields.fields import Base64ImageField
 
 

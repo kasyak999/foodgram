@@ -1,7 +1,7 @@
+import uuid
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.contrib.auth import get_user_model
-import uuid
 
 
 MAX_LENGT_EMAIL = 254
@@ -64,7 +64,7 @@ class Recipe(PublishedModel):
 
     def generate_link(self):
         if not self.link:
-            self.link = uuid.uuid4().hex[:5]
+            self.link = uuid.uuid4().hex[:3]
 
     class Meta:
         """Перевод модели"""

@@ -12,7 +12,6 @@ router.register(r'tags', TegViewSet, basename='tags')
 router.register(r'ingredients', IngredientViewSet, basename='ingredients')
 router.register(r'recipes', RecipeViewSet, basename='recipes')
 
-# http://localhost/api/recipes/download_shopping_cart/
 urlpatterns = [
     path('users/set_password/', UserViewSet.as_view({'post': 'set_password'})),
     path('', include(router.urls)),
