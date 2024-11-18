@@ -14,7 +14,8 @@ from .models import (
 from django.shortcuts import get_object_or_404, redirect
 from .permissions import IsOwner
 from django.http import HttpResponse
-
+from django_filters.rest_framework import DjangoFilterBackend
+from .filters import RecipeFilter
 
 User = get_user_model()
 
@@ -119,6 +120,8 @@ class RecipeViewSet(viewsets.ModelViewSet):  # не готово
     pagination_class = LimitOffsetPagination
     http_method_names = ['get', 'post', 'patch', 'delete']
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwner]
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilter
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
