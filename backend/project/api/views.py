@@ -61,7 +61,8 @@ class UsersViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_204_NO_CONTENT)
 
     @action(
-        detail=False, methods=['get'], url_path='subscriptions')
+        detail=False, methods=['get'], url_path='subscriptions',
+        permission_classes=[IsAuthenticated])
     def user_Follow(self, request):
         """Список подписок"""
         follows = Follow.objects.filter(user=request.user)
@@ -71,7 +72,9 @@ class UsersViewSet(viewsets.ModelViewSet):
             paginated_follows, many=True, context={'request': request})
         return paginator.get_paginated_response(serializer.data)
 
-    @action(detail=True, methods=['post', 'delete'], url_path='subscribe')
+    @action(
+        detail=True, methods=['post', 'delete'], url_path='subscribe',
+        permission_classes=[IsAuthenticated])
     def subscribe(self, request, pk=None):
         """Подписаться или отписаться от пользователя"""
         result = get_object_or_404(User, pk=pk)
