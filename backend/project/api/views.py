@@ -218,11 +218,10 @@ class RecipeViewSet(viewsets.ModelViewSet):  # не готово
                         'amount': amount,
                     }
 
-        list_text = "Список покупок:<ul>"
+        list_text = "Список покупок:\n"
         for name, value in ingredients.items():
             list_text += (
-                f"<ul> {name}: {value['amount']} {value['measurement_unit']}.</ul>")
-        list_text += '</ul>'
+                f"- {name} ({value['measurement_unit']}) - {value['amount']}\n")
         response = HttpResponse(list_text, content_type='text/plain')
-        response['Content-Disposition'] = 'attachment; filename="shopping_list.txt"'
+        response['Content-Disposition'] = 'attachment; filename="list.txt"'
         return response
