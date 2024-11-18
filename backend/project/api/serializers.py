@@ -27,13 +27,19 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             queryset=User.objects.all(),
             message="Этот username уже используется"), validate_username]
     )
-    first_name = serializers.CharField(required=True)
-    last_name = serializers.CharField(required=True)
+    first_name = serializers.CharField(
+        required=True, max_length=MAX_LENGT_USERNAME)
+    last_name = serializers.CharField(
+        required=True, max_length=MAX_LENGT_USERNAME)
 
     class Meta:
         model = User
         fields = (
             'email', 'id', 'username', 'first_name', 'last_name', 'password')
+
+    def to_representation(self, instance):
+        serializer = RegistrationSerializer(instance, context=self.context)
+        return serializer.data
 
     def create(self, validated_data):
         password = validated_data.pop('password')
@@ -43,7 +49,15 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return user
 
 
-class UsersSerializer(UserRegistrationSerializer):
+class RegistrationSerializer(serializers.ModelSerializer):
+    """Вывод после регистрации"""
+    class Meta:
+        model = User
+        fields = (
+            'email', 'id', 'username', 'first_name', 'last_name', 'avatar')
+
+
+class UsersSerializer(serializers.ModelSerializer):
     """Сериализатор для /me и пользователей"""
     is_subscribed = serializers.SerializerMethodField(read_only=True)
 
@@ -67,6 +81,13 @@ class UserAvatarSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['avatar']
+
+    def validate(self, attrs):
+        if 'avatar' not in attrs:
+            raise serializers.ValidationError(
+                {'avatar': 'Является обязательным полем.'}
+            )
+        return attrs
 
 
 class FollowSerializer(serializers.ModelSerializer):
