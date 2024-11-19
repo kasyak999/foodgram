@@ -9,6 +9,12 @@ services:
     env_file: .env
     volumes:
       - pg_data:/var/lib/postgresql/data
+  frontend:
+    build: ./frontend/
+    env_file: .env
+    command: cp -r /app/build/. /static/
+    volumes:
+      - static:/static
   backend:
     build: ./backend/
     env_file: .env
@@ -26,7 +32,7 @@ services:
       sh -c "python manage.py migrate &&
       python manage.py collectstatic &&
       cp -r /app/collected_static/. /backend_static/static/ &&
-      gunicorn --bind 0.0.0.0:9000 project.wsgi"
+      gunicorn --bind 0.0.0.0:7000 project.wsgi"
   gateway:
     build: ./nginx/
     env_file: .env
