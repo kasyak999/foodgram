@@ -3,12 +3,20 @@ from .models import Recipe, Favorite, Basket, Teg
 
 
 class RecipeFilter(django_filters.FilterSet):
-    # author = django_filters.CharFilter(
-    #     field_name='author__username', lookup_expr='iexact')
-    is_favorited = django_filters.BooleanFilter(
-        method='filter', label='Is Favorited')
-    is_in_shopping_cart = django_filters.BooleanFilter(
-        method='filter', label='is in shopping cart')
+    # is_favorited = django_filters.BooleanFilter(
+    #     method='filter', label='Is Favorited')
+    # is_in_shopping_cart = django_filters.BooleanFilter(
+    #     method='filter', label='is in shopping cart')
+    is_favorited = django_filters.ChoiceFilter(
+        method='filter',
+        choices=[('1', 'Yes'), ('0', 'No')],
+        label='Is Favorited'
+    )
+    is_in_shopping_cart = django_filters.ChoiceFilter(
+        method='filter',
+        choices=[('1', 'Yes'), ('0', 'No')],
+        label='Is in Shopping Cart'
+    )
     tags = django_filters.ModelMultipleChoiceFilter(
         queryset=Teg.objects.all(),
         field_name='tags__slug',

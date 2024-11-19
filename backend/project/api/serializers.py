@@ -219,12 +219,24 @@ class AddRecipeSerializer(serializers.ModelSerializer):
             'ingredients', 'tags', 'image', 'name', 'text', 'name',
             'cooking_time', 'link']
 
+    def validate(self, attrs):
+        if 'ingredients' not in attrs:
+            raise serializers.ValidationError({
+                "ingredients": "Поле 'ingredients' является обязательным."
+            })
+        return attrs
+
     def validate_ingredients(self, value):
         if len(value) < 2:
             raise ValidationError("Не может быть только один игридиент")
         for ingredient in value:
             if not Ingredient.objects.filter(id=ingredient['id']):
                 raise ValidationError("Ингредиент с таким ID не существует.")
+        ingredient_list = []
+        for ingredient in value:
+            if ingredient['id'] in ingredient_list:
+                raise ValidationError("Не может быть одинаковых игридиентов")
+            ingredient_list.append(ingredient['id'])
         return value
 
     def to_representation(self, instance):
