@@ -7,7 +7,7 @@ class Command(BaseCommand):
     help = "Загрузить ингредиенты из файла JSON"
 
     def handle(self, *args, **kwargs):
-        with open('../data/ingredients.json', 'r', encoding='utf-8') as file:
+        with open('ingredients.json', 'r', encoding='utf-8') as file:
             data = json.load(file)
 
         for item in data:
