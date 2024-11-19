@@ -31,10 +31,20 @@ class RecipeFilter(django_filters.FilterSet):
 
     def filter(self, queryset, name, value):
         """Фильтр избраное и список покупок"""
+        if value == '1':
+            value = True
+        elif value == '0':
+            value = False
+        else:
+            return queryset
+
         if name == 'is_favorited':
             model = Favorite
         elif name == 'is_in_shopping_cart':
             model = Basket
+
+        if not self.request.user.is_authenticated:
+            return queryset
 
         result = model.objects.filter(
             user=self.request.user).values('recipe')
