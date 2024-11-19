@@ -31,7 +31,6 @@ services:
     command: >
       sh -c "python manage.py migrate &&
       python manage.py collectstatic &&
-      python manage.py add_ingredients &&
       cp -r /app/collected_static/. /backend_static/static/ &&
       gunicorn --bind 0.0.0.0:7000 project.wsgi"
   gateway:
