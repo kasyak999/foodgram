@@ -228,7 +228,8 @@ class RecipeViewSet(viewsets.ModelViewSet):  # не готово
         list_text = "Список покупок:\n"
         for name, value in ingredients.items():
             list_text += (
-                f"- {name} ({value['measurement_unit']}) - {value['amount']}\n")
+                f"- {name} ({value['measurement_unit']}) - "
+                f"{value['amount']}\n")
         response = HttpResponse(list_text, content_type='text/plain')
         response['Content-Disposition'] = 'attachment; filename="list.txt"'
         return response

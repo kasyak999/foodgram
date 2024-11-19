@@ -1,9 +1,5 @@
 import re
 from rest_framework.serializers import ValidationError
-import base64
-from io import BytesIO
-from PIL import Image
-from django.core.files.base import ContentFile
 
 
 # Пример регулярного выражения, которое вы можете использовать

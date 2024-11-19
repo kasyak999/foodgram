@@ -6,7 +6,6 @@ from .models import (
     Favorite, RecipeIngredient, Basket)
 from .validators import validate_username
 from drf_extra_fields.fields import Base64ImageField
-from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
 
 User = get_user_model()
