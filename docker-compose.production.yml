@@ -1,0 +1,39 @@
+volumes:
+  pg_data:
+  static:
+  media:
+
+services:
+  db:
+    image: postgres:13
+    env_file: .env
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+  frontend:
+    image: kasyak999/foodgram-frontend
+    env_file: .env
+    command: cp -r /app/build/. /static/
+    volumes:
+      - static:/static
+  backend:
+    image: kasyak999/foodgram-backend
+    env_file: .env
+    depends_on:
+      - db
+    volumes:
+      - static:/backend_static
+      - media:/app/media
+    command: >
+      sh -c "python manage.py makemigrations &&
+      python manage.py migrate &&
+      python manage.py collectstatic &&
+      cp -r /app/collected_static/. /backend_static/static/ &&
+      gunicorn --bind 0.0.0.0:7000 project.wsgi"
+  gateway:
+    image: kasyak999/foodgram-gateway
+    env_file: .env
+    ports:
+      - 7000:80
+    volumes:
+      - static:/static
+      - media:/media
