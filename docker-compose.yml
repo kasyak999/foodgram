@@ -1,0 +1,14 @@
+volumes:
+  pg_data:
+  static:
+  media:
+
+services:
+  gateway:
+    build: ./nginx/
+    env_file: .env
+    ports:
+      - 7000:80
+    volumes:
+      - static:/static
+      - media:/media
