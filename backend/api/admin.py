@@ -12,7 +12,7 @@ class UserProfileAdmin(admin.ModelAdmin):
 
 
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'author', 'favorites_count')
+    list_display = ('id', 'name', 'author', 'favorites_count', 'created_at')
     search_fields = ('author', 'name')
     list_filter = ('tags',)
 

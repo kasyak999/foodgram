@@ -71,6 +71,9 @@ class Recipe(PublishedModel):
     link = models.CharField(
         max_length=10, unique=True, blank=True, null=True,
         verbose_name='Ссылка')
+    created_at = models.DateTimeField(
+        auto_now_add=True, verbose_name='Добавлено'
+    )
 
     def generate_link(self):
         if not self.link:
@@ -81,6 +84,7 @@ class Recipe(PublishedModel):
         verbose_name = 'рецепт'
         verbose_name_plural = 'Рецепты'
         default_related_name = 'recipes'
+        ordering = ('-created_at',)
 
 
 class Teg(PublishedModel):
