@@ -7,8 +7,18 @@ from django.contrib.auth import get_user_model
 MAX_LENGT_EMAIL = 254
 MAX_LENGT_USERNAME = 150
 WEIGHT_UNITS = [
-    ('кг', 'Килограммы'),
-    ('г', 'Граммы'),
+    ('кг', 'Килограмм'),
+    ('г', 'Грамм'),
+    ('мл', 'Милилитр'),
+    ('шт', 'Штук'),
+    ('капля', 'капля'),
+    ('л', 'Литр'),
+    ('банка', 'банка'),
+    ('стакан', 'стакан'),
+    ('щепотка', 'щепотка'),
+    ('ч. л.', 'Чайная ложка'),
+    ('веточка', 'веточка'),
+    ('батон', 'батон')
 ]
 
 
@@ -93,7 +103,7 @@ class Teg(PublishedModel):
 class Ingredient(PublishedModel):
     """Ингредиент"""
     measurement_unit = models.CharField(
-        max_length=2, choices=WEIGHT_UNITS, default='кг',
+        max_length=10, choices=WEIGHT_UNITS, default='кг',
         verbose_name='Единица измерения')
 
     class Meta:
