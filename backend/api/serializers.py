@@ -227,8 +227,8 @@ class AddRecipeSerializer(serializers.ModelSerializer):
         return attrs
 
     def validate_ingredients(self, value):
-        if len(value) < 2:
-            raise ValidationError("Не может быть только один игридиент")
+        # if len(value) < 2:
+        #     raise ValidationError("Не может быть только один игридиент")
         for ingredient in value:
             if not Ingredient.objects.filter(id=ingredient['id']):
                 raise ValidationError("Ингредиент с таким ID не существует.")
