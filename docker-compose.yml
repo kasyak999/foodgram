@@ -4,6 +4,29 @@ volumes:
   media:
 
 services:
+  db:
+    image: postgres:13
+    env_file: .env
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+  backend:
+    build: ./backend/
+    env_file: .env
+    depends_on:
+      - db
+    volumes:
+      - static:/backend_static
+      - media:/app/media
+    # entrypoint: >
+    #   sh -c "python manage.py migrate &&
+    #   python manage.py collectstatic &&
+    #   cp -r /app/collected_static/. /backend_static/static/ &&
+    #   gunicorn --bind 0.0.0.0:9000 kittygram_backend.wsgi"
+    command: >
+      sh -c "python manage.py migrate &&
+      python manage.py collectstatic &&
+      cp -r /app/collected_static/. /backend_static/static/ &&
+      gunicorn --bind 0.0.0.0:9000 project.wsgi"
   gateway:
     build: ./nginx/
     env_file: .env
