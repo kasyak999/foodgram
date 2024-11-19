@@ -1,9 +1,19 @@
 from django.contrib import admin
 
 from .models import (
-    Basket, Favorite, Follow, Ingredient,
-    Recipe, RecipeIngredient, Teg, UserProfile,
+    Basket,
+    Favorite,
+    Follow,
+    Ingredient,
+    Recipe,
+    RecipeIngredient,
+    Teg,
+    UserProfile
 )
+# from .models import (
+#     Basket, Favorite, Follow, Ingredient,
+#     Recipe, RecipeIngredient, Teg, UserProfile,
+# )
 
 
 class UserProfileAdmin(admin.ModelAdmin):
