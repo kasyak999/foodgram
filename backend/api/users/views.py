@@ -72,54 +72,32 @@ class UsersViewSet(viewsets.ModelViewSet):
         return paginator.get_paginated_response(serializer.data)
 
     @action(
-        detail=True, methods=['post', 'delete'], url_path='subscribe',
+        detail=True, methods=['post'], url_path='subscribe',
         permission_classes=[IsAuthenticated])
     def subscribe(self, request, pk=None):
-        """Подписаться или отписаться от пользователя"""
+        """Подписаться на пользователя"""
         result = get_object_or_404(User, pk=pk)
         follow = Follow.objects.filter(user=request.user, following=result)
-        if request.method == 'POST':
-            if result == request.user or follow.exists():
-                return Response(
-                    {"detail": "Ошибка подписки"},
-                    status=status.HTTP_400_BAD_REQUEST)
-            follow = Follow.objects.create(user=request.user, following=result)
-            serializer = FollowSerializer(follow, context={'request': request})
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        if request.method == 'DELETE':
-            if follow.exists():
-                follow.delete()
-                return Response(
-                    {"detail": "Вы успешно отписались от пользователя."},
-                    status=status.HTTP_204_NO_CONTENT
-                )
+        if result == request.user or follow.exists():
             return Response(
-                {"detail": "Вы не подписаны на этого пользователя."},
-                status=status.HTTP_400_BAD_REQUEST
+                {"detail": "Вы уже подписанны"},
+                status=status.HTTP_400_BAD_REQUEST)
+        follow = Follow.objects.create(user=request.user, following=result)
+        serializer = FollowSerializer(follow, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @subscribe.mapping.delete
+    def subscribe_delete(self, request, pk=None):
+        """Отписаться от пользователя"""
+        result = get_object_or_404(User, pk=pk)
+        follow = Follow.objects.filter(user=request.user, following=result)
+        if follow.exists():
+            follow.delete()
+            return Response(
+                {"detail": "Вы успешно отписались от пользователя."},
+                status=status.HTTP_204_NO_CONTENT
             )
-    # @action(
-    #     detail=True, methods=['post', 'delete'], url_path='subscribe',
-    #     permission_classes=[IsAuthenticated])
-    # def subscribe(self, request, pk=None):
-    #     """Подписаться или отписаться от пользователя"""
-    #     result = get_object_or_404(User, pk=pk)
-    #     follow = Follow.objects.filter(user=request.user, following=result)
-    #     if request.method == 'POST':
-    #         if result == request.user or follow.exists():
-    #             return Response(
-    #                 {"detail": "Ошибка подписки"},
-    #                 status=status.HTTP_400_BAD_REQUEST)
-    #         follow = Follow.objects.create(user=request.user, following=result)
-    #         serializer = FollowSerializer(follow, context={'request': request})
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     if request.method == 'DELETE':
-    #         if follow.exists():
-    #             follow.delete()
-    #             return Response(
-    #                 {"detail": "Вы успешно отписались от пользователя."},
-    #                 status=status.HTTP_204_NO_CONTENT
-    #             )
-    #         return Response(
-    #             {"detail": "Вы не подписаны на этого пользователя."},
-    #             status=status.HTTP_400_BAD_REQUEST
-    #         )
+        return Response(
+            {"detail": "Вы не подписаны на этого пользователя."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
