@@ -63,9 +63,7 @@ class Recipe(PublishedModel):
     author = models.ForeignKey(
         User, on_delete=models.CASCADE,
         verbose_name='Автор публикации')
-    image = models.ImageField(upload_to='images/', verbose_name='Картинка')
-    text = models.TextField(verbose_name='Текстовое описание')
-    tags = models.ManyToManyField('Teg', verbose_name='Теги')
+    tags = models.ManyToManyField('Tag', verbose_name='Теги')
     cooking_time = models.IntegerField(
         verbose_name='Время приготовления', help_text='в минутах')
     link = models.CharField(
@@ -74,6 +72,8 @@ class Recipe(PublishedModel):
     created_at = models.DateTimeField(
         auto_now_add=True, verbose_name='Добавлено'
     )
+    image = models.ImageField(upload_to='images/', verbose_name='Картинка')
+    text = models.TextField(verbose_name='Текстовое описание')
 
     def generate_link(self):
         if not self.link:
@@ -87,7 +87,7 @@ class Recipe(PublishedModel):
         ordering = ('-created_at',)
 
 
-class Teg(PublishedModel):
+class Tag(PublishedModel):
     """Тег"""
 
     slug = models.SlugField(
@@ -175,7 +175,7 @@ class Favorite(models.Model):
         return f'Подписчик {self.user}'
 
 
-class Basket(models.Model):
+class ShoppingCart(models.Model):
     """Список покупок или корзина"""
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='shopping_cart',

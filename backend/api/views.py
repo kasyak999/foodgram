@@ -6,11 +6,11 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from .serializers import (
     UserRegistrationSerializer, UsersSerializer, UserAvatarSerializer,
-    TegSerializer, RecipeSerializer, IngredientSerializer, FollowSerializer,
+    TagSerializer, RecipeSerializer, IngredientSerializer, FollowSerializer,
     RecipeShortSerializer, AddRecipeSerializer)
 from rest_framework.pagination import LimitOffsetPagination
 from .models import (
-    Teg, Recipe, Ingredient, Follow, Favorite, Basket, RecipeIngredient)
+    Tag, Recipe, Ingredient, Follow, Favorite, ShoppingCart, RecipeIngredient)
 from django.shortcuts import get_object_or_404, redirect
 from .permissions import IsOwner
 from django.http import HttpResponse
@@ -100,11 +100,11 @@ class UsersViewSet(viewsets.ModelViewSet):
             )
 
 
-class TegViewSet(viewsets.ReadOnlyModelViewSet):
+class TagViewSet(viewsets.ReadOnlyModelViewSet):
     """Теги"""
-    queryset = Teg.objects.all()
+    queryset = Tag.objects.all()
     permission_classes = [AllowAny]
-    serializer_class = TegSerializer
+    serializer_class = TagSerializer
     pagination_class = None
 
 
@@ -178,14 +178,14 @@ class RecipeViewSet(viewsets.ModelViewSet):  # не готово
     def shopping_cart(self, request, pk=None):
         """Добавление в список покупок"""
         result = get_object_or_404(Recipe, pk=pk)
-        basket = Basket.objects.filter(user=request.user, recipe=result)
+        basket = ShoppingCart.objects.filter(user=request.user, recipe=result)
         if request.method == 'POST':
             if basket.exists():
                 return Response(
                     {"detail": "Рецепт уже добавлен."},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            Basket.objects.create(user=request.user, recipe=result)
+            ShoppingCart.objects.create(user=request.user, recipe=result)
             serializer = RecipeShortSerializer(result)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if request.method == 'DELETE':
@@ -205,7 +205,7 @@ class RecipeViewSet(viewsets.ModelViewSet):  # не готово
         permission_classes=[IsAuthenticated])
     def download_basket(self, request):
         """Получение файла списка покупок"""
-        basket = Basket.objects.filter(user=self.request.user)
+        basket = ShoppingCart.objects.filter(user=self.request.user)
         ingredients = {}
 
         for result in basket:

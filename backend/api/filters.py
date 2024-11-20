@@ -1,5 +1,5 @@
 import django_filters
-from .models import Basket, Favorite, Recipe, Teg
+from .models import ShoppingCart, Favorite, Recipe, Tag
 
 
 class RecipeFilter(django_filters.FilterSet):
@@ -18,7 +18,7 @@ class RecipeFilter(django_filters.FilterSet):
         label='Is in Shopping Cart'
     )
     tags = django_filters.ModelMultipleChoiceFilter(
-        queryset=Teg.objects.all(),
+        queryset=Tag.objects.all(),
         field_name='tags__slug',
         to_field_name='slug',
         # widget=django_filters.widgets.CSVWidget(),
@@ -41,7 +41,7 @@ class RecipeFilter(django_filters.FilterSet):
         if name == 'is_favorited':
             model = Favorite
         elif name == 'is_in_shopping_cart':
-            model = Basket
+            model = ShoppingCart
 
         if not self.request.user.is_authenticated:
             return queryset

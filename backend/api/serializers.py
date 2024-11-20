@@ -2,8 +2,8 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from .models import (
-    MAX_LENGT_EMAIL, MAX_LENGT_USERNAME, Teg, Recipe, Ingredient, Follow,
-    Favorite, RecipeIngredient, Basket)
+    MAX_LENGT_EMAIL, MAX_LENGT_USERNAME, Tag, Recipe, Ingredient, Follow,
+    Favorite, RecipeIngredient, ShoppingCart)
 from .validators import validate_username
 from drf_extra_fields.fields import Base64ImageField
 from django.core.exceptions import ValidationError
@@ -136,10 +136,10 @@ class FollowSerializer(serializers.ModelSerializer):
 #  -------------------------------------------------------
 
 
-class TegSerializer(serializers.ModelSerializer):
+class TagSerializer(serializers.ModelSerializer):
     """Серелизатор для вывода тегов"""
     class Meta:
-        model = Teg
+        model = Tag
         fields = '__all__'
 
 
@@ -176,7 +176,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     """Серелизатор для списка рецептов"""
     author = UsersSerializer(read_only=True)
     ingredients = serializers.SerializerMethodField(read_only=True)
-    tags = TegSerializer(many=True)
+    tags = TagSerializer(many=True)
     is_favorited = serializers.SerializerMethodField(read_only=True)
     is_in_shopping_cart = serializers.SerializerMethodField(read_only=True)
     image = serializers.ImageField()
@@ -197,7 +197,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if not request or request.user.is_anonymous:
             return False
-        return Basket.objects.filter(user=request.user, recipe=obj).exists()
+        return ShoppingCart.objects.filter(user=request.user, recipe=obj).exists()
 
     def get_ingredients(self, obj):
         result = RecipeIngredient.objects.filter(recipe=obj)
