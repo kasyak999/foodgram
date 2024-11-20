@@ -2,7 +2,10 @@ from datetime import timedelta
 from pathlib import Path
 import os
 
-
+CSRF_TRUSTED_ORIGINS = [
+    'https://foot99321.zapto.org',
+    'https://kasyak999.zapto.org',
+]
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-opy)3hjn3ba(00vuz+%l5x(5!kcjm^opf_b(46i)pva!zx%a+c'
 DEBUG = True
