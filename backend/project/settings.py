@@ -1,7 +1,10 @@
 from datetime import timedelta
 from pathlib import Path
+from dotenv import load_dotenv
 import os
 
+
+load_dotenv()
 CSRF_TRUSTED_ORIGINS = [
     'https://foot99321.zapto.org',
     'https://kasyak999.zapto.org',
