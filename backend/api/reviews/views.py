@@ -12,9 +12,10 @@ from reviews.models import (
     Tag, Recipe, Ingredient, Favorite, ShoppingCart, RecipeIngredient)
 from api.permissions import IsOwner
 from api.filters import RecipeFilter
+from api.serializers import RecipeShortSerializer
 from .serializers import (
     TagSerializer, RecipeSerializer, IngredientSerializer,
-    RecipeShortSerializer, AddRecipeSerializer)
+    AddRecipeSerializer)
 
 
 User = get_user_model()

@@ -3,7 +3,7 @@ from rest_framework import serializers
 from drf_extra_fields.fields import Base64ImageField
 from reviews.models import (
     Tag, Recipe, Ingredient, Favorite, RecipeIngredient, ShoppingCart)
-from ..users.serializers import UsersSerializer
+from api.serializers import UsersSerializer
 
 
 User = get_user_model()
@@ -148,10 +148,3 @@ class AddRecipeSerializer(serializers.ModelSerializer):
                 amount=ingredient['amount']
             )
         return instance
-
-
-class RecipeShortSerializer(serializers.ModelSerializer):
-    """Свернутый сериализатор для рецептов"""
-    class Meta:
-        model = Recipe
-        fields = ['id', 'name', 'image', 'cooking_time']

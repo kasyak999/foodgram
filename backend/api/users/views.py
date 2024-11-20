@@ -7,8 +7,9 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from users.models import Follow
+from api.serializers import UsersSerializer
 from .serializers import (
-    UserRegistrationSerializer, UsersSerializer, UserAvatarSerializer,
+    UserRegistrationSerializer, UserAvatarSerializer,
     FollowSerializer)
 
 
@@ -96,3 +97,29 @@ class UsersViewSet(viewsets.ModelViewSet):
                 {"detail": "Вы не подписаны на этого пользователя."},
                 status=status.HTTP_400_BAD_REQUEST
             )
+    # @action(
+    #     detail=True, methods=['post', 'delete'], url_path='subscribe',
+    #     permission_classes=[IsAuthenticated])
+    # def subscribe(self, request, pk=None):
+    #     """Подписаться или отписаться от пользователя"""
+    #     result = get_object_or_404(User, pk=pk)
+    #     follow = Follow.objects.filter(user=request.user, following=result)
+    #     if request.method == 'POST':
+    #         if result == request.user or follow.exists():
+    #             return Response(
+    #                 {"detail": "Ошибка подписки"},
+    #                 status=status.HTTP_400_BAD_REQUEST)
+    #         follow = Follow.objects.create(user=request.user, following=result)
+    #         serializer = FollowSerializer(follow, context={'request': request})
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #     if request.method == 'DELETE':
+    #         if follow.exists():
+    #             follow.delete()
+    #             return Response(
+    #                 {"detail": "Вы успешно отписались от пользователя."},
+    #                 status=status.HTTP_204_NO_CONTENT
+    #             )
+    #         return Response(
+    #             {"detail": "Вы не подписаны на этого пользователя."},
+    #             status=status.HTTP_400_BAD_REQUEST
+    #         )

@@ -7,6 +7,7 @@ from project.settings import MAX_LENGT_EMAIL, MAX_LENGT_USERNAME
 from users.models import Follow
 from reviews.models import Recipe
 from api.validators import validate_username
+from api.serializers import RecipeShortSerializer
 
 
 User = get_user_model()
@@ -56,23 +57,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'email', 'id', 'username', 'first_name', 'last_name')
-
-
-class UsersSerializer(serializers.ModelSerializer):
-    """Сериализатор для /me и пользователей"""
-    is_subscribed = serializers.SerializerMethodField(read_only=True)
-
-    class Meta:
-        model = User
-        fields = (
-            'email', 'id', 'username', 'first_name', 'last_name',
-            'is_subscribed', 'avatar')
-
-    def get_is_subscribed(self, obj):
-        request = self.context.get('request')
-        if not request or request.user.is_anonymous:
-            return False
-        return Follow.objects.filter(user=request.user, following=obj).exists()
 
 
 class UserAvatarSerializer(serializers.ModelSerializer):
