@@ -3,10 +3,6 @@ from reviews.models import ShoppingCart, Favorite, Recipe, Tag
 
 
 class RecipeFilter(django_filters.FilterSet):
-    # is_favorited = django_filters.BooleanFilter(
-    #     method='filter', label='Is Favorited')
-    # is_in_shopping_cart = django_filters.BooleanFilter(
-    #     method='filter', label='is in shopping cart')
     is_favorited = django_filters.ChoiceFilter(
         method='filter',
         choices=[('1', 'Yes'), ('0', 'No')],
@@ -21,7 +17,6 @@ class RecipeFilter(django_filters.FilterSet):
         queryset=Tag.objects.all(),
         field_name='tags__slug',
         to_field_name='slug',
-        # widget=django_filters.widgets.CSVWidget(),
         label='Теги'
     )
 
