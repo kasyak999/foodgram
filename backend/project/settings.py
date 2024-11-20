@@ -6,7 +6,7 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-opy)3hjn3ba(00vuz+%l5x(5!kcjm^opf_b(46i)pva!zx%a+c'
 DEBUG = True
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'foot99321.zapto.org']
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
