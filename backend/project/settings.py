@@ -5,6 +5,8 @@ import os
 
 
 load_dotenv()
+MAX_LENGT_EMAIL = 254
+MAX_LENGT_USERNAME = 150
 CSRF_TRUSTED_ORIGINS = [
     'https://foot99321.zapto.org',
     'https://kasyak999.zapto.org',
@@ -27,10 +29,11 @@ INSTALLED_APPS = [
     'djoser',
     'django_filters',
 
-    'api.apps.ApiConfig',
+    'users.apps.UsersConfig',
+    'reviews.apps.ReviewsConfig'
 
 ]
-AUTH_USER_MODEL = 'api.UserProfile'
+AUTH_USER_MODEL = 'users.UserProfile'
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

@@ -1,11 +1,10 @@
 import uuid
-from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.contrib.auth import get_user_model
+from project.settings import MAX_LENGT_USERNAME
 
 
-MAX_LENGT_EMAIL = 254
-MAX_LENGT_USERNAME = 150
+User = get_user_model()
 WEIGHT_UNITS = [
     ('кг', 'Килограмм'),
     ('г', 'Грамм'),
@@ -20,27 +19,6 @@ WEIGHT_UNITS = [
     ('веточка', 'веточка'),
     ('батон', 'батон')
 ]
-
-
-class UserProfile(AbstractUser):
-    email = models.EmailField(
-        unique=True, blank=True, max_length=MAX_LENGT_EMAIL)
-    username = models.CharField(
-        max_length=MAX_LENGT_USERNAME, blank=True, unique=True)
-    avatar = models.ImageField(upload_to='users/', null=True, blank=True)
-
-    class Meta:
-        """Перевод модели"""
-
-        verbose_name = 'пользователь'
-        verbose_name_plural = 'Пользователи'
-        ordering = ('username',)
-
-    def __str__(self):
-        return self.username
-
-
-User = get_user_model()
 
 
 class PublishedModel(models.Model):
@@ -131,31 +109,6 @@ class RecipeIngredient(models.Model):
 
     def __str__(self):
         return f'{self.ingredient.name}'
-
-
-class Follow(models.Model):
-    """Подписки пользователей"""
-    following = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='following',
-        verbose_name='на кого подписан')
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='follower',
-        verbose_name='Подписчик')
-
-    class Meta:
-        """Перевод модели"""
-        verbose_name = 'подписка'
-        verbose_name_plural = 'Подписки'
-        ordering = ('user',)
-        constraints = [
-            models.UniqueConstraint(
-                fields=['user', 'following'],
-                name='unique_name_owner'
-            )
-        ]
-
-    def __str__(self):
-        return f'Подписчик {self.user}'
 
 
 class Favorite(models.Model):

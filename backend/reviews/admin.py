@@ -1,14 +1,7 @@
 from django.contrib import admin
-from .models import (
-    ShoppingCart, Favorite, Follow, Ingredient, Recipe, RecipeIngredient, Tag,
-    UserProfile
+from reviews.models import (
+    ShoppingCart, Favorite, Ingredient, Recipe, RecipeIngredient, Tag
 )
-
-
-class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'username',)
-    search_fields = ('email', 'username')
-    list_display_links = ('username',)
 
 
 class RecipeAdmin(admin.ModelAdmin):
@@ -32,10 +25,8 @@ class RecipeIngredientAdmin(admin.ModelAdmin):
 
 admin.site.register(ShoppingCart, admin.ModelAdmin)
 admin.site.register(Tag, admin.ModelAdmin)
-admin.site.register(Follow, admin.ModelAdmin)
 admin.site.register(Favorite, admin.ModelAdmin)
 
 admin.site.register(RecipeIngredient, RecipeIngredientAdmin)
 admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(Recipe, RecipeAdmin)
-admin.site.register(UserProfile, UserProfileAdmin)
