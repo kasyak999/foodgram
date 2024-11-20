@@ -1,7 +1,7 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from reviews.models import Recipe
 from users.models import Follow
-from django.contrib.auth import get_user_model
 
 
 User = get_user_model()

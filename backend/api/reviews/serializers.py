@@ -70,7 +70,8 @@ class RecipeSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if not request or request.user.is_anonymous:
             return False
-        return ShoppingCart.objects.filter(user=request.user, recipe=obj).exists()
+        return ShoppingCart.objects.filter(
+            user=request.user, recipe=obj).exists()
 
     def get_ingredients(self, obj):
         result = RecipeIngredient.objects.filter(recipe=obj)
@@ -103,11 +104,13 @@ class AddRecipeSerializer(serializers.ModelSerializer):
         #     raise ValidationError("Не может быть только один игридиент")
         for ingredient in value:
             if not Ingredient.objects.filter(id=ingredient['id']):
-                raise serializers.ValidationError("Ингредиент с таким ID не существует.")
+                raise serializers.ValidationError(
+                    "Ингредиент с таким ID не существует.")
         ingredient_list = []
         for ingredient in value:
             if ingredient['id'] in ingredient_list:
-                raise serializers.ValidationError("Не может быть одинаковых игридиентов")
+                raise serializers.ValidationError(
+                    "Не может быть одинаковых игридиентов")
             ingredient_list.append(ingredient['id'])
         return value
 

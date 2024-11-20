@@ -9,8 +9,8 @@ from rest_framework.pagination import LimitOffsetPagination
 from users.models import Follow
 from api.serializers import UsersSerializer
 from .serializers import (
-    UserRegistrationSerializer, UserAvatarSerializer,
-    FollowSerializer)
+    UserRegistrationSerializer, UserAvatarSerializer, FollowSerializer,
+)
 
 
 User = get_user_model()
