@@ -22,6 +22,19 @@ WEIGHT_UNITS = [
 ]
 
 
+class PublishedModel(models.Model):
+    """Базовая модель"""
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, verbose_name='Пользователь')
+    recipe = models.ForeignKey(
+        'Recipe', on_delete=models.CASCADE, verbose_name='Рецепт')
+
+    class Meta:
+        abstract = True
+        ordering = ('user',)
+
+
 class Tag(models.Model):
     """Тег"""
     name = models.CharField(
@@ -131,19 +144,6 @@ class RecipeIngredient(models.Model):
         return f'{self.ingredient.name}'
 
 
-class PublishedModel(models.Model):
-    """Базовая модель"""
-
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, verbose_name='Пользователь')
-    recipe = models.ForeignKey(
-        'Recipe', on_delete=models.CASCADE, verbose_name='Рецепт')
-
-    class Meta:
-        abstract = True
-        ordering = ('user',)
-
-
 class Favorite(PublishedModel):
     """Избраные рецепты"""
 
@@ -167,7 +167,7 @@ class ShoppingCart(PublishedModel):
     class Meta(PublishedModel.Meta):
         verbose_name = 'список покупок'
         verbose_name_plural = 'Списки покупок'
-        default_related_name = 'shoppingsarts'
+        default_related_name = 'shoppingcarts'
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'], name='unique_user_ShoppingCart')

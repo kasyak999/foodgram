@@ -102,13 +102,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def shopping_cart(self, request, pk=None):
         """Добавление в список покупок"""
         result = get_object_or_404(Recipe, pk=pk)
-        basket = result.shoppingsarts.filter(user=request.user)
+        basket = result.shoppingcarts.filter(user=request.user)
         if basket.exists():
             return Response(
                 {"detail": "Рецепт уже добавлен в список покупок."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        result.shoppingsarts.create(user=request.user, recipe=result)
+        result.shoppingcarts.create(user=request.user, recipe=result)
         serializer = RecipeShortSerializer(result)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -116,7 +116,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def shopping_cart_delete(self, request, pk=None):
         """Удаление из списка покупок"""
         result = get_object_or_404(Recipe, pk=pk)
-        basket = result.shoppingsarts.filter(user=request.user)
+        basket = result.shoppingcarts.filter(user=request.user)
         if basket.exists():
             basket.delete()
             return Response(
@@ -133,7 +133,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated])
     def download_basket(self, request):
         """Получение файла списка покупок"""
-        basket = request.user.shoppingsarts.all()
+        basket = request.user.shoppingcarts.all()
         ingredients = {}
 
         for result in basket:
