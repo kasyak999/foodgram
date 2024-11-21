@@ -2,10 +2,6 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from project.settings import MAX_LENGT_EMAIL, MAX_LENGT_USERNAME
 from django.core.exceptions import ValidationError
-from django.core.validators import RegexValidator
-
-
-# PATTERN = r'^[\w.@+-]+\Z'
 
 
 class UserProfile(AbstractUser):
