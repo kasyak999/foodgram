@@ -6,9 +6,9 @@ from rest_framework.permissions import (
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
-from api.serializers import UsersSerializer
+from .serializers import UsersSerializer
 from .serializers import (
-    UserRegistrationSerializer, UserAvatarSerializer, FollowSerializer,
+    UsersSerializer, UserRegistrationSerializer, UserAvatarSerializer, FollowSerializer,
 )
 
 
@@ -81,10 +81,10 @@ class UsersViewSet(viewsets.ModelViewSet):
             return Response(
                 {"detail": "Вы уже подписанны"},
                 status=status.HTTP_400_BAD_REQUEST)
-        if result == request.user:
-            return Response(
-                {"detail": "Нельзя подписаться на себя"},
-                status=status.HTTP_400_BAD_REQUEST)
+        # if result == request.user:
+        #     return Response(
+        #         {"detail": "Нельзя подписаться на себя"},
+        #         status=status.HTTP_400_BAD_REQUEST)
         follow = request.user.follower.create(following=result)
         serializer = FollowSerializer(follow, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)

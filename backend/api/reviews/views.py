@@ -10,11 +10,10 @@ from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from reviews.models import Tag, Recipe, Ingredient
 from api.permissions import IsOwner
-from api.filters import RecipeFilter
-from api.serializers import RecipeShortSerializer
+from .filters import RecipeFilter
 from .serializers import (
     TagSerializer, RecipeSerializer, IngredientSerializer,
-    AddRecipeSerializer)
+    AddRecipeSerializer, RecipeShortSerializer)
 
 
 User = get_user_model()

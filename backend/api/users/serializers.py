@@ -5,12 +5,29 @@ from rest_framework.validators import UniqueValidator
 
 from project.settings import MAX_LENGT_EMAIL, MAX_LENGT_USERNAME
 from users.models import Follow
-from reviews.models import Recipe
 from api.validators import validate_username
-from api.serializers import RecipeShortSerializer
 
 
 User = get_user_model()
+
+
+class UsersSerializer(serializers.ModelSerializer):
+    """Сериализатор для /me и пользователей"""
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = (
+            'email', 'id', 'username', 'first_name', 'last_name',
+            'is_subscribed', 'avatar')
+
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        if not request or request.user.is_anonymous:
+            return False
+        if request.user.follower.filter(following=obj):
+            return True
+        return False
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -90,6 +107,12 @@ class FollowSerializer(serializers.ModelSerializer):
     recipes_count = serializers.SerializerMethodField(read_only=True)
     avatar = serializers.SerializerMethodField(read_only=True)
 
+    def validate(self, data):
+        if data['user'] == data['following']:
+            raise serializers.ValidationError(
+                'Нельзя подписаться на самого себя.')
+        return data
+
     class Meta:
         model = Follow
         fields = (
@@ -98,18 +121,18 @@ class FollowSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         current_user = self.context.get('request').user
-        return Follow.objects.filter(
-            user=current_user, following=obj.following).exists()
+        return current_user.following.filter(following=obj.following)
 
     def get_recipes(self, obj):
         """Метод для получения рецептов подписанного пользователя"""
-        recipes = Recipe.objects.filter(author=obj.following)
+        from api.reviews.serializers import RecipeShortSerializer
+        recipes = obj.following.recipes.all()
         return RecipeShortSerializer(
             recipes, many=True, context=self.context).data
 
     def get_recipes_count(self, obj):
         """Общее количество рецептов пользователя"""
-        return Recipe.objects.filter(author=obj.following).count()
+        return obj.following.recipes.all().count()
 
     def get_avatar(self, obj):
         request = self.context.get('request')
