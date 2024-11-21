@@ -106,6 +106,7 @@ class RecipeIngredient(models.Model):
         """Перевод модели"""
         verbose_name = 'количество ингредиента'
         verbose_name_plural = 'Количество ингредиентов'
+        default_related_name = 'recipeingredients'
 
     def __str__(self):
         return f'{self.ingredient.name}'
@@ -131,11 +132,9 @@ class Favorite(models.Model):
 class ShoppingCart(models.Model):
     """Список покупок или корзина"""
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='shopping_cart',
-        verbose_name='Пользователь')
+        User, on_delete=models.CASCADE, verbose_name='Пользователь')
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name='in_shopping_cart',
-        verbose_name='Рецепт')
+        Recipe, on_delete=models.CASCADE, verbose_name='Рецепт')
 
     class Meta:
         constraints = [
@@ -144,6 +143,7 @@ class ShoppingCart(models.Model):
         ]
         verbose_name = 'список покупок'
         verbose_name_plural = 'Списки покупок'
+        default_related_name = 'shoppingsarts'
 
     def __str__(self):
         return f'{self.user.username} — {self.recipe.name}'

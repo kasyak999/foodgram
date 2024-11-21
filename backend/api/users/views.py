@@ -6,7 +6,6 @@ from rest_framework.permissions import (
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
-from users.models import Follow
 from api.serializers import UsersSerializer
 from .serializers import (
     UserRegistrationSerializer, UserAvatarSerializer, FollowSerializer,
@@ -64,7 +63,7 @@ class UsersViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated])
     def user_Follow(self, request):
         """Список подписок"""
-        follows = Follow.objects.filter(user=request.user)
+        follows = request.user.follower.all()
         paginator = LimitOffsetPagination()
         paginated_follows = paginator.paginate_queryset(follows, request)
         serializer = FollowSerializer(
@@ -77,12 +76,16 @@ class UsersViewSet(viewsets.ModelViewSet):
     def subscribe(self, request, pk=None):
         """Подписаться на пользователя"""
         result = get_object_or_404(User, pk=pk)
-        follow = Follow.objects.filter(user=request.user, following=result)
-        if result == request.user or follow.exists():
+        follow = request.user.follower.filter(following=pk)
+        if follow.exists():
             return Response(
                 {"detail": "Вы уже подписанны"},
                 status=status.HTTP_400_BAD_REQUEST)
-        follow = Follow.objects.create(user=request.user, following=result)
+        if result == request.user:
+            return Response(
+                {"detail": "Нельзя подписаться на себя"},
+                status=status.HTTP_400_BAD_REQUEST)
+        follow = request.user.follower.create(following=result)
         serializer = FollowSerializer(follow, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -90,7 +93,7 @@ class UsersViewSet(viewsets.ModelViewSet):
     def subscribe_delete(self, request, pk=None):
         """Отписаться от пользователя"""
         result = get_object_or_404(User, pk=pk)
-        follow = Follow.objects.filter(user=request.user, following=result)
+        follow = request.user.follower.filter(following=result)
         if follow.exists():
             follow.delete()
             return Response(

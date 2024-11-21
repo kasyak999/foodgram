@@ -8,8 +8,7 @@ from rest_framework.permissions import (
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
-from reviews.models import (
-    Tag, Recipe, Ingredient, Favorite, ShoppingCart, RecipeIngredient)
+from reviews.models import Tag, Recipe, Ingredient
 from api.permissions import IsOwner
 from api.filters import RecipeFilter
 from api.serializers import RecipeShortSerializer
@@ -37,7 +36,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
 
 
-class RecipeViewSet(viewsets.ModelViewSet):  # не готово
+class RecipeViewSet(viewsets.ModelViewSet):
     """Рецепты"""
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
@@ -61,13 +60,13 @@ class RecipeViewSet(viewsets.ModelViewSet):  # не готово
     def favorite(self, request, pk=None):
         """Добавление в избраного"""
         result = get_object_or_404(Recipe, pk=pk)
-        favorite = Favorite.objects.filter(user=request.user, recipe=result)
+        favorite = result.favorites.filter(user=request.user)
         if favorite.exists():
             return Response(
                 {"detail": "Рецепт уже добавлен в избранное."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        Favorite.objects.create(user=request.user, recipe=result)
+        result.favorites.create(user=request.user)
         serializer = RecipeShortSerializer(result)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -75,7 +74,7 @@ class RecipeViewSet(viewsets.ModelViewSet):  # не готово
     def favorite_delete(self, request, pk=None):
         """Удаление из избраного"""
         result = get_object_or_404(Recipe, pk=pk)
-        favorite = Favorite.objects.filter(user=request.user, recipe=result)
+        favorite = result.favorites.filter(user=request.user)
         if favorite.exists():
             favorite.delete()
             return Response(
@@ -91,6 +90,7 @@ class RecipeViewSet(viewsets.ModelViewSet):  # не готово
         detail=True, methods=['get'], url_path='get-link',
         permission_classes=[IsAuthenticated])
     def get_link(self, request, pk=None):
+        """Получение короткой ссылки"""
         result = get_object_or_404(Recipe, pk=pk)
         return Response(
             {"short-link": request.build_absolute_uri(f"/s/{result.link}")},
@@ -103,13 +103,13 @@ class RecipeViewSet(viewsets.ModelViewSet):  # не готово
     def shopping_cart(self, request, pk=None):
         """Добавление в список покупок"""
         result = get_object_or_404(Recipe, pk=pk)
-        basket = ShoppingCart.objects.filter(user=request.user, recipe=result)
+        basket = result.shoppingsarts.filter(user=request.user)
         if basket.exists():
             return Response(
                 {"detail": "Рецепт уже добавлен в список покупок."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        ShoppingCart.objects.create(user=request.user, recipe=result)
+        result.shoppingsarts.create(user=request.user, recipe=result)
         serializer = RecipeShortSerializer(result)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -117,7 +117,7 @@ class RecipeViewSet(viewsets.ModelViewSet):  # не готово
     def shopping_cart_delete(self, request, pk=None):
         """Удаление из списка покупок"""
         result = get_object_or_404(Recipe, pk=pk)
-        basket = ShoppingCart.objects.filter(user=request.user, recipe=result)
+        basket = result.shoppingsarts.filter(user=request.user)
         if basket.exists():
             basket.delete()
             return Response(
@@ -134,13 +134,11 @@ class RecipeViewSet(viewsets.ModelViewSet):  # не готово
         permission_classes=[IsAuthenticated])
     def download_basket(self, request):
         """Получение файла списка покупок"""
-        basket = ShoppingCart.objects.filter(user=self.request.user)
+        basket = request.user.shoppingsarts.all()
         ingredients = {}
 
         for result in basket:
-            recipe_ingredients = RecipeIngredient.objects.filter(
-                recipe=result.recipe)
-
+            recipe_ingredients = result.recipe.recipeingredients.all()
             for ingredient in recipe_ingredients:
                 name = ingredient.ingredient.name
                 measurement_unit = ingredient.ingredient.measurement_unit
