@@ -5,7 +5,7 @@ from rest_framework.validators import UniqueValidator
 
 from project.settings import MAX_LENGT_EMAIL, MAX_LENGT_USERNAME
 from users.models import Follow
-from api.validators import validate_username
+from .validators import validate_username
 
 
 User = get_user_model()
@@ -121,7 +121,9 @@ class FollowSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         current_user = self.context.get('request').user
-        return current_user.following.filter(following=obj.following)
+        if obj.following.following.filter(user=current_user):
+            return True
+        return False
 
     def get_recipes(self, obj):
         """Метод для получения рецептов подписанного пользователя"""

@@ -6,7 +6,6 @@ from rest_framework.permissions import (
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
-from .serializers import UsersSerializer
 from .serializers import (
     UsersSerializer, UserRegistrationSerializer, UserAvatarSerializer, FollowSerializer,
 )
