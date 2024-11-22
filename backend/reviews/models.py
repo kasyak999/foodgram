@@ -2,7 +2,7 @@ import uuid
 from django.db import models
 from django.contrib.auth import get_user_model
 from project.settings import MAX_LENGT_USERNAME
-# from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 
 
@@ -96,7 +96,10 @@ class Recipe(models.Model):
         through='RecipeIngredient',
     )
     cooking_time = models.IntegerField(
-        verbose_name='Время приготовления', help_text='в минутах')
+        verbose_name='Время приготовления', help_text='в минутах',
+        validators=[MinValueValidator(
+            1, message='Количество должно быть больше 0')]
+    )
     link = models.CharField(
         max_length=10, unique=True, blank=True, null=True,
         verbose_name='Ссылка')
@@ -106,7 +109,13 @@ class Recipe(models.Model):
     image = models.ImageField(upload_to='images/', verbose_name='Картинка')
     text = models.TextField(verbose_name='Текстовое описание')
 
+    # def clean(self):
+    #     # Проверяем, есть ли связанные ингредиенты
+    #     if not self.ingredients.exists():
+    #         raise ValidationError("Рецепт не может быть без ингредиентов.")
+
     def generate_link(self):
+        """Генерация ссылки"""
         if not self.link:
             self.link = uuid.uuid4().hex[:3]
 
@@ -130,7 +139,8 @@ class RecipeIngredient(models.Model):
     amount = models.IntegerField(
         verbose_name='Количество',
         validators=[MinValueValidator(
-            1, message='Количество должно быть больше 0')])
+            1, message='Количество должно быть больше 0')]
+    )
 
     class Meta:
         """Перевод модели"""

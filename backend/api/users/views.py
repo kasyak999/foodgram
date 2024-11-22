@@ -8,7 +8,8 @@ from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from .serializers import (
     UsersSerializer, UserRegistrationSerializer, UserAvatarSerializer,
-    FollowSerializer)
+    FollowSerializer, AddFollowSerializer)
+from users.models import Follow
 
 
 User = get_user_model()
@@ -75,18 +76,14 @@ class UsersViewSet(viewsets.ModelViewSet):
     def subscribe(self, request, pk=None):
         """Подписаться на пользователя"""
         result = get_object_or_404(User, pk=pk)
-        follow = request.user.follower.filter(following=pk)
-        if follow.exists():
-            return Response(
-                {"detail": "Вы уже подписанны"},
-                status=status.HTTP_400_BAD_REQUEST)
-        # if result == request.user:
-        #     return Response(
-        #         {"detail": "Нельзя подписаться на себя"},
-        #         status=status.HTTP_400_BAD_REQUEST)
-        follow = request.user.follower.create(following=result)
-        serializer = FollowSerializer(follow, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        data = {
+            'user': request.user.id,
+            'following': result.id
+        }    
+        serializer = AddFollowSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
     @subscribe.mapping.delete
     def subscribe_delete(self, request, pk=None):

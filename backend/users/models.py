@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from project.settings import MAX_LENGT_EMAIL, MAX_LENGT_USERNAME
 from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 
 
 class UserProfile(AbstractUser):
@@ -9,6 +10,15 @@ class UserProfile(AbstractUser):
         unique=True, blank=True, max_length=MAX_LENGT_EMAIL)
     username = models.CharField(
         max_length=MAX_LENGT_USERNAME, blank=True, unique=True,
+        validators=[
+            RegexValidator(
+                regex=r'^[a-zA-Z0-9_]+$',
+                message=(
+                    'Имя пользователя может содержать только латинские '
+                    'буквы, цифры и символ подчеркивания.'),
+                code='invalid_username'
+            )
+        ]
     )
     avatar = models.ImageField(
         upload_to='users/', null=True, blank=True, default=None)

@@ -5,6 +5,7 @@ from reviews.models import (
 from django.db.models import Count
 from django.utils.safestring import mark_safe
 from django.contrib.admin import SimpleListFilter
+from django.core.exceptions import ValidationError
 
 
 class CookingTimeFilter(SimpleListFilter):
@@ -73,6 +74,12 @@ class RecipeAdmin(admin.ModelAdmin):
         result = super().get_queryset(request)
         return result.annotate(
             favorites_count=Count('favorites')).prefetch_related('tags')
+    
+    # def save_model(self, request, obj, form, change):
+    #     # Проверяем, есть ли ингредиенты у рецепта
+    #     if not obj.recipeingredients.exists():
+    #         raise ValidationError("Нельзя сохранить рецепт без ингредиентов.")
+    #     super().save_model(request, obj, form, change)
 
 
 @admin.register(Ingredient)

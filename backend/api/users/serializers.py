@@ -107,12 +107,6 @@ class FollowSerializer(serializers.ModelSerializer):
     recipes_count = serializers.SerializerMethodField(read_only=True)
     avatar = serializers.SerializerMethodField(read_only=True)
 
-    def validate(self, data):
-        if data['user'] == data['following']:
-            raise serializers.ValidationError(
-                'Нельзя подписаться на самого себя.')
-        return data
-
     class Meta:
         model = Follow
         fields = (
@@ -120,10 +114,7 @@ class FollowSerializer(serializers.ModelSerializer):
             'is_subscribed', 'recipes', 'recipes_count', 'avatar')
 
     def get_is_subscribed(self, obj):
-        current_user = self.context.get('request').user
-        if obj.following.following.filter(user=current_user):
-            return True
-        return False
+        return True if obj.following else False
 
     def get_recipes(self, obj):
         """Метод для получения рецептов подписанного пользователя"""
@@ -137,7 +128,23 @@ class FollowSerializer(serializers.ModelSerializer):
         return obj.following.recipes.all().count()
 
     def get_avatar(self, obj):
-        request = self.context.get('request')
         if obj.following.avatar:
-            return request.build_absolute_uri(obj.following.avatar)
+            return obj.following.avatar.url
         return None
+
+
+class AddFollowSerializer(serializers.ModelSerializer):
+    """Добавление подписчиков"""
+    class Meta:
+        model = Follow
+        fields = 'following', 'user'
+
+    def validate(self, data):
+        if data['user'] == data['following']:
+            raise serializers.ValidationError(
+                'Нельзя подписаться на самого себя.')
+        return data
+
+    def to_representation(self, instance):
+        serializer = FollowSerializer(instance)
+        return serializer.data
