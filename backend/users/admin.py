@@ -24,6 +24,7 @@ class UserProfileAdmin(UserAdmin):
             )
         return 'Нет изображения'
 
+
 @admin.register(Follow)
 class FollowAdmin(admin.ModelAdmin):
     list_display = ('user', 'following',)
