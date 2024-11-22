@@ -3,7 +3,7 @@ from reviews.models import (
     ShoppingCart, Favorite, Ingredient, Recipe, RecipeIngredient, Tag
 )
 from django.db.models import Count
-from django.utils.html import format_html, mark_safe
+# from django.utils.html import format_html, mark_safe
 from django.utils.safestring import mark_safe
 
 
@@ -33,12 +33,13 @@ class RecipeAdmin(admin.ModelAdmin):
     @admin.display(description='В избранном')
     def favorites_count(self, obj):
         return obj.favorites_count
-    
+
     # @admin.display(description='Ингредиенты')
     # def formatted_ingredients(self, obj):
     #     """Отобразить ингредиенты с количеством как HTML"""
     #     ingredients_html = ''.join(
-    #         f'<p>{ri.ingredient.name}: {ri.amount} {ri.ingredient.measurement_unit}</p>'
+    #         f'<p>{ri.ingredient.name}: {ri.amount} {
+    # ri.ingredient.measurement_unit}</p>'
     #         for ri in obj.recipeingredients.all()
     #     )
     #     return mark_safe(ingredients_html)
@@ -49,7 +50,8 @@ class RecipeAdmin(admin.ModelAdmin):
         print(obj.image.url)
         if obj.image:
             return mark_safe(
-                f'<img src="{obj.image.url}" alt="Image" style="max-height: 100px; max-width: 100px;"/>'
+                f'<img src="{obj.image.url}" alt="Image" '
+                f'style="max-height: 100px; max-width: 100px;"/>'
             )
         return 'Нет изображения'
 
