@@ -13,7 +13,7 @@ from api.permissions import IsOwner
 from .filters import RecipeFilter
 from .serializers import (
     TagSerializer, RecipeSerializer, IngredientSerializer,
-    AddRecipeSerializer, RecipeShortSerializer)
+    AddRecipeSerializer, AddFavoriteSerializer, AddShoppingCartSerializer)
 
 
 User = get_user_model()
@@ -59,15 +59,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def favorite(self, request, pk=None):
         """Добавление в избраного"""
         result = get_object_or_404(Recipe, pk=pk)
-        favorite = result.favorites.filter(user=request.user)
-        if favorite.exists():
-            return Response(
-                {"detail": "Рецепт уже добавлен в избранное."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        result.favorites.create(user=request.user)
-        serializer = RecipeShortSerializer(result)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        data = {
+            'user': request.user.id,
+            'recipe': result.id
+        }
+        serializer = AddFavoriteSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
     @favorite.mapping.delete
     def favorite_delete(self, request, pk=None):
@@ -102,15 +101,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def shopping_cart(self, request, pk=None):
         """Добавление в список покупок"""
         result = get_object_or_404(Recipe, pk=pk)
-        basket = result.shoppingcarts.filter(user=request.user)
-        if basket.exists():
-            return Response(
-                {"detail": "Рецепт уже добавлен в список покупок."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        result.shoppingcarts.create(user=request.user, recipe=result)
-        serializer = RecipeShortSerializer(result)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        data = {
+            'user': request.user.id,
+            'recipe': result.id
+        }
+        serializer = AddShoppingCartSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
     @shopping_cart.mapping.delete
     def shopping_cart_delete(self, request, pk=None):

@@ -171,7 +171,7 @@ class Favorite(PublishedModel):
         ]
 
     def __str__(self):
-        return self.user
+        return f'{self.user}'
 
 
 class ShoppingCart(PublishedModel):
@@ -187,4 +187,4 @@ class ShoppingCart(PublishedModel):
         ]
 
     def __str__(self):
-        return self.user
+        return f'{self.user}'

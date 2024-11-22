@@ -158,3 +158,25 @@ class RecipeShortSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ['id', 'name', 'image', 'cooking_time']
+
+
+class AddFavoriteSerializer(serializers.ModelSerializer):
+    """Добавление в избраное"""
+    class Meta:
+        model = Favorite
+        fields = ['user', 'recipe']
+
+    def to_representation(self, instance):
+        serializer = RecipeShortSerializer(instance.recipe)
+        return serializer.data
+
+
+class AddShoppingCartSerializer(serializers.ModelSerializer):
+    """Добавление в избраное"""
+    class Meta:
+        model = ShoppingCart
+        fields = ['user', 'recipe']
+
+    def to_representation(self, instance):
+        serializer = RecipeShortSerializer(instance.recipe)
+        return serializer.data
