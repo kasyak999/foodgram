@@ -10,7 +10,8 @@ class UserProfile(AbstractUser):
     username = models.CharField(
         max_length=MAX_LENGT_USERNAME, blank=True, unique=True,
     )
-    avatar = models.ImageField(upload_to='users/', null=True, blank=True)
+    avatar = models.ImageField(
+        upload_to='users/', null=True, blank=True, default=None)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 

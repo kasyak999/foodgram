@@ -3,6 +3,8 @@ from reviews.models import (
     ShoppingCart, Favorite, Ingredient, Recipe, RecipeIngredient, Tag
 )
 from django.db.models import Count
+from django.utils.html import format_html, mark_safe
+from django.utils.safestring import mark_safe
 
 
 class RecipeIngredientInline(admin.TabularInline):
@@ -15,7 +17,7 @@ class RecipeIngredientInline(admin.TabularInline):
 class RecipeAdmin(admin.ModelAdmin):
     list_display = (
         'name', 'formatted_cooking_time', 'author', 'tags_list',
-        'favorites_count')
+        'favorites_count', 'image_preview')
     search_fields = ('tags__name', 'name')
     list_filter = ('author', 'tags',)
     inlines = [RecipeIngredientInline]
@@ -31,6 +33,25 @@ class RecipeAdmin(admin.ModelAdmin):
     @admin.display(description='В избранном')
     def favorites_count(self, obj):
         return obj.favorites_count
+    
+    # @admin.display(description='Ингредиенты')
+    # def formatted_ingredients(self, obj):
+    #     """Отобразить ингредиенты с количеством как HTML"""
+    #     ingredients_html = ''.join(
+    #         f'<p>{ri.ingredient.name}: {ri.amount} {ri.ingredient.measurement_unit}</p>'
+    #         for ri in obj.recipeingredients.all()
+    #     )
+    #     return mark_safe(ingredients_html)
+
+    @admin.display(description='Картинка')
+    def image_preview(self, obj):
+        """Показывать миниатюру изображения"""
+        print(obj.image.url)
+        if obj.image:
+            return mark_safe(
+                f'<img src="{obj.image.url}" alt="Image" style="max-height: 100px; max-width: 100px;"/>'
+            )
+        return 'Нет изображения'
 
     def get_queryset(self, request):
         result = super().get_queryset(request)
