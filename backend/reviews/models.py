@@ -2,7 +2,6 @@ import uuid
 from django.db import models
 from django.contrib.auth import get_user_model
 from project.settings import MAX_LENGT_USERNAME
-from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 
 

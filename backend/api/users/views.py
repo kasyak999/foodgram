@@ -9,7 +9,6 @@ from rest_framework.pagination import LimitOffsetPagination
 from .serializers import (
     UsersSerializer, UserRegistrationSerializer, UserAvatarSerializer,
     FollowSerializer, AddFollowSerializer)
-from users.models import Follow
 
 
 User = get_user_model()
@@ -79,7 +78,7 @@ class UsersViewSet(viewsets.ModelViewSet):
         data = {
             'user': request.user.id,
             'following': result.id
-        }    
+        }
         serializer = AddFollowSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
