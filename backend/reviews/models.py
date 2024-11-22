@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from project.settings import MAX_LENGT_USERNAME
 # from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator
 
 
 User = get_user_model()
@@ -78,7 +79,7 @@ class Ingredient(models.Model):
         ordering = ('name',)
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.measurement_unit})"
 
 
 class Recipe(models.Model):
@@ -126,7 +127,10 @@ class RecipeIngredient(models.Model):
         Recipe, on_delete=models.CASCADE, verbose_name='Рецепт', blank=False)
     ingredient = models.ForeignKey(
         Ingredient, on_delete=models.CASCADE, verbose_name='Ингредиент')
-    amount = models.IntegerField(verbose_name='Количество')
+    amount = models.IntegerField(
+        verbose_name='Количество',
+        validators=[MinValueValidator(
+            1, message='Количество должно быть больше 0')])
 
     class Meta:
         """Перевод модели"""
