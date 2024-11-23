@@ -6,6 +6,7 @@ from rest_framework.validators import UniqueValidator
 from project.settings import MAX_LENGT_EMAIL, MAX_LENGT_USERNAME
 from users.models import Follow
 from .validators import validate_username
+from django.db.models import Count
 
 
 User = get_user_model()
@@ -94,17 +95,25 @@ class UserAvatarSerializer(serializers.ModelSerializer):
 
 class FollowSerializer(serializers.ModelSerializer):
     """Подписчики"""
-    email = serializers.EmailField(source='following.email', read_only=True)
-    id = serializers.IntegerField(source='following.id', read_only=True)
-    username = serializers.CharField(
-        source='following.username', read_only=True)
-    first_name = serializers.CharField(
-        source='following.first_name', read_only=True)
-    last_name = serializers.CharField(
-        source='following.last_name', read_only=True)
+    # email = serializers.EmailField(source='following.email', read_only=True)
+    # id = serializers.IntegerField(source='following.id', read_only=True)
+    # username = serializers.CharField(
+    #     source='following.username', read_only=True)
+    # first_name = serializers.CharField(
+    #     source='following.first_name', read_only=True)
+    # last_name = serializers.CharField(
+    #     source='following.last_name', read_only=True)
+    # is_subscribed = serializers.SerializerMethodField(read_only=True)
+
+    email = serializers.EmailField(read_only=True)
+    id = serializers.IntegerField(read_only=True)
+    username = serializers.CharField(read_only=True)
+    first_name = serializers.CharField(read_only=True)
+    last_name = serializers.CharField(read_only=True)
     is_subscribed = serializers.SerializerMethodField(read_only=True)
     recipes = serializers.SerializerMethodField(read_only=True)
     recipes_count = serializers.SerializerMethodField(read_only=True)
+    # recipes_count = serializers.IntegerField(read_only=True)
     avatar = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
@@ -119,17 +128,17 @@ class FollowSerializer(serializers.ModelSerializer):
     def get_recipes(self, obj):
         """Метод для получения рецептов подписанного пользователя"""
         from api.reviews.serializers import RecipeShortSerializer
-        recipes = obj.following.recipes.all()
+        recipes = obj.recipes.all()
         return RecipeShortSerializer(
             recipes, many=True, context=self.context).data
 
     def get_recipes_count(self, obj):
         """Общее количество рецептов пользователя"""
-        return obj.following.recipes.all().count()
+        return obj.recipes.all().count()
 
     def get_avatar(self, obj):
-        if obj.following.avatar:
-            return obj.following.avatar.url
+        if obj.avatar:
+            return obj.avatar.url
         return None
 
 
@@ -146,5 +155,6 @@ class AddFollowSerializer(serializers.ModelSerializer):
         return data
 
     def to_representation(self, instance):
-        serializer = FollowSerializer(instance)
+        print(instance)
+        serializer = FollowSerializer(instance.following)
         return serializer.data

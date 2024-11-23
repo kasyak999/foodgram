@@ -9,6 +9,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from .serializers import (
     UsersSerializer, UserRegistrationSerializer, UserAvatarSerializer,
     FollowSerializer, AddFollowSerializer)
+from django.db.models import Count
 
 
 User = get_user_model()
@@ -19,6 +20,9 @@ class UsersViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     permission_classes = [AllowAny]
     pagination_class = LimitOffsetPagination
+
+    # def get_queryset(self):
+    #     return super().get_queryset().annotate(recipes_count=Count('recipes'))
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -41,12 +45,8 @@ class UsersViewSet(viewsets.ModelViewSet):
         user = request.user
         serializer = UserAvatarSerializer(
             user, data=request.data, partial=True)
-        if serializer.is_valid():
-            user.avatar = serializer.validated_data.get('avatar')
-            user.save()
-            return Response(
-                {'avatar': user.avatar.url})
-        return Response(serializer.errors, status=400)
+        serializer.is_valid(raise_exception=True)
+        return Response({'avatar': user.avatar.url})
 
     @avatar.mapping.delete
     def avatar_delete(self, request):
@@ -62,9 +62,17 @@ class UsersViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated])
     def user_Follow(self, request):
         """Список подписок"""
-        follows = request.user.follower.all()
-        paginator = LimitOffsetPagination()
-        paginated_follows = paginator.paginate_queryset(follows, request)
+        follows = request.user.follower.all().annotate(
+            recipes_count=Count('following__recipes'))
+        users = [follow.following for follow in follows]
+        users = []
+        for follow in follows:
+            users.append(follow.following)
+        # print(users)
+        # print(users[0].email)
+
+        paginator = self.pagination_class()
+        paginated_follows = paginator.paginate_queryset(users, request)
         serializer = FollowSerializer(
             paginated_follows, many=True, context={'request': request})
         return paginator.get_paginated_response(serializer.data)
