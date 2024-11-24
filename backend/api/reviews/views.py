@@ -14,6 +14,7 @@ from .filters import RecipeFilter
 from .serializers import (
     TagSerializer, RecipeSerializer, IngredientSerializer,
     AddRecipeSerializer, AddFavoriteSerializer, AddShoppingCartSerializer)
+from api.utils import add_method, remove_method
 
 
 User = get_user_model()
@@ -37,13 +38,16 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     """Рецепты"""
-    queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     pagination_class = LimitOffsetPagination
     http_method_names = ['get', 'post', 'patch', 'delete']
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwner]
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
+
+    def get_queryset(self):
+        return Recipe.objects.all().select_related(
+            'author').prefetch_related('tags', 'ingredients')
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
@@ -57,32 +61,21 @@ class RecipeViewSet(viewsets.ModelViewSet):
         detail=True, methods=['post'], url_path='favorite',
         permission_classes=[IsAuthenticated])
     def favorite(self, request, pk=None):
-        """Добавление в избраного"""
-        result = get_object_or_404(Recipe, pk=pk)
-        data = {
-            'user': request.user.id,
-            'recipe': result.id
-        }
-        serializer = AddFavoriteSerializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+        """Добавление в избраное"""
+        return add_method(
+            model=Recipe,
+            request=request,
+            pk=pk,
+            serializer_class=AddFavoriteSerializer,
+            related_field='recipe'
+        )
 
     @favorite.mapping.delete
     def favorite_delete(self, request, pk=None):
         """Удаление из избраного"""
         result = get_object_or_404(Recipe, pk=pk)
         favorite = result.favorites.filter(user=request.user)
-        if favorite.exists():
-            favorite.delete()
-            return Response(
-                {"detail": "Рецепт успешно удален из избранного."},
-                status=status.HTTP_204_NO_CONTENT
-            )
-        return Response(
-            {"detail": "Рецепт отсутствует в избранном."},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        return remove_method(favorite)
 
     @action(
         detail=True, methods=['get'], url_path='get-link',
@@ -100,31 +93,20 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk=None):
         """Добавление в список покупок"""
-        result = get_object_or_404(Recipe, pk=pk)
-        data = {
-            'user': request.user.id,
-            'recipe': result.id
-        }
-        serializer = AddShoppingCartSerializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+        return add_method(
+            model=Recipe,
+            request=request,
+            pk=pk,
+            serializer_class=AddShoppingCartSerializer,
+            related_field='recipe'
+        )
 
     @shopping_cart.mapping.delete
     def shopping_cart_delete(self, request, pk=None):
         """Удаление из списка покупок"""
         result = get_object_or_404(Recipe, pk=pk)
         basket = result.shoppingcarts.filter(user=request.user)
-        if basket.exists():
-            basket.delete()
-            return Response(
-                {"detail": "Рецепт успешно удален из списка покупок."},
-                status=status.HTTP_204_NO_CONTENT
-            )
-        return Response(
-            {"detail": "Рецепт отсутствует в списке покупок."},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        return remove_method(basket)
 
     @action(
         detail=False, methods=['get'], url_path='download_shopping_cart',

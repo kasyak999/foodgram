@@ -10,6 +10,7 @@ from .serializers import (
     UsersSerializer, UserRegistrationSerializer, UserAvatarSerializer,
     FollowSerializer, AddFollowSerializer)
 from django.db.models import Count
+from api.utils import add_method, remove_method
 
 
 User = get_user_model()
@@ -82,28 +83,17 @@ class UsersViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated])
     def subscribe(self, request, pk=None):
         """Подписаться на пользователя"""
-        result = get_object_or_404(User, pk=pk)
-        data = {
-            'user': request.user.id,
-            'following': result.id
-        }
-        serializer = AddFollowSerializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+        return add_method(
+            model=User,
+            request=request,
+            pk=pk,
+            serializer_class=AddFollowSerializer,
+            related_field='following'
+        )
 
     @subscribe.mapping.delete
     def subscribe_delete(self, request, pk=None):
         """Отписаться от пользователя"""
         result = get_object_or_404(User, pk=pk)
         follow = request.user.follower.filter(following=result)
-        if follow.exists():
-            follow.delete()
-            return Response(
-                {"detail": "Вы успешно отписались от пользователя."},
-                status=status.HTTP_204_NO_CONTENT
-            )
-        return Response(
-            {"detail": "Вы не подписаны на этого пользователя."},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        return remove_method(follow)
