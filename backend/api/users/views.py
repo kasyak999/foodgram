@@ -23,7 +23,8 @@ class UsersViewSet(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
 
     # def get_queryset(self):
-    #     return super().get_queryset().annotate(recipes_count=Count('recipes'))
+    #     return super().get_queryset().annotate(
+    #       recipes_count=Count('recipes'))
 
     def get_serializer_class(self):
         if self.action == 'create':

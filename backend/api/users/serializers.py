@@ -6,7 +6,7 @@ from rest_framework.validators import UniqueValidator
 from project.settings import MAX_LENGT_EMAIL, MAX_LENGT_USERNAME
 from users.models import Follow
 from .validators import validate_username
-from django.db.models import Count
+# from django.db.models import Count
 
 
 User = get_user_model()
