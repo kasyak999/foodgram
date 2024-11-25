@@ -11,6 +11,7 @@ from .serializers import (
     FollowSerializer, AddFollowSerializer)
 from django.db.models import Count
 from api.utils import add_method, remove_method
+from users.models import Follow
 
 
 User = get_user_model()
@@ -24,7 +25,7 @@ class UsersViewSet(viewsets.ModelViewSet):
 
     # def get_queryset(self):
     #     return super().get_queryset().annotate(
-    #       recipes_count=Count('recipes'))
+    # recipes_count=Count('recipes'))
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -64,17 +65,10 @@ class UsersViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated])
     def user_Follow(self, request):
         """Список подписок"""
-        follows = request.user.follower.all().annotate(
+        follows = request.user.follower.annotate(
             recipes_count=Count('following__recipes'))
-        users = [follow.following for follow in follows]
-        users = []
-        for follow in follows:
-            users.append(follow.following)
-        # print(users)
-        # print(users[0].email)
-
         paginator = self.pagination_class()
-        paginated_follows = paginator.paginate_queryset(users, request)
+        paginated_follows = paginator.paginate_queryset(follows, request)
         serializer = FollowSerializer(
             paginated_follows, many=True, context={'request': request})
         return paginator.get_paginated_response(serializer.data)

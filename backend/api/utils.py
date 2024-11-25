@@ -45,4 +45,4 @@ def recipe_create_and_update(recipe, ingredients_data, tags_data):
             )
             for ingredient in ingredients_data
         ]
-        RecipeIngredient.objects.bulk_create(ingredients_list)
+        recipe.recipeingredients.bulk_create(ingredients_list)
