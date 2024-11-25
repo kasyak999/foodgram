@@ -11,7 +11,6 @@ from .serializers import (
     FollowSerializer, AddFollowSerializer)
 from django.db.models import Count
 from api.utils import add_method, remove_method
-from users.models import Follow
 
 
 User = get_user_model()
@@ -22,10 +21,6 @@ class UsersViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     permission_classes = [AllowAny]
     pagination_class = LimitOffsetPagination
-
-    # def get_queryset(self):
-    #     return super().get_queryset().annotate(
-    # recipes_count=Count('recipes'))
 
     def get_serializer_class(self):
         if self.action == 'create':
