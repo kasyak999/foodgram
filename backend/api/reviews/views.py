@@ -7,7 +7,6 @@ from rest_framework.permissions import (
     IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 from reviews.models import Tag, Recipe, Ingredient
 from api.permissions import IsOwner
 from .filters import RecipeFilter, IngredientFilter
@@ -41,7 +40,6 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     """Рецепты"""
     serializer_class = RecipeSerializer
-    # pagination_class = LimitOffsetPagination
     pagination_class = RecipePagination
     http_method_names = ['get', 'post', 'patch', 'delete']
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwner]
