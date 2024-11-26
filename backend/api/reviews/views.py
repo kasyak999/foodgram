@@ -15,6 +15,7 @@ from .serializers import (
     TagSerializer, RecipeSerializer, IngredientSerializer,
     AddRecipeSerializer, AddFavoriteSerializer, AddShoppingCartSerializer)
 from api.utils import add_method, remove_method
+from rest_framework import filters
 
 
 User = get_user_model()
@@ -34,6 +35,8 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [AllowAny]
     serializer_class = IngredientSerializer
     pagination_class = None
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    search_fields = ('name',)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
