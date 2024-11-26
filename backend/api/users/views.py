@@ -1,16 +1,16 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
+from django.db.models import Count
 from rest_framework.response import Response
 from rest_framework.permissions import (
     IsAuthenticated, AllowAny)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.pagination import LimitOffsetPagination
+from api.utils import add_method, remove_method
+from api.pagination import RecipePagination
 from .serializers import (
     UsersSerializer, UserRegistrationSerializer, UserAvatarSerializer,
     FollowSerializer, AddFollowSerializer)
-from django.db.models import Count
-from api.utils import add_method, remove_method
 
 
 User = get_user_model()
@@ -20,7 +20,7 @@ class UsersViewSet(viewsets.ModelViewSet):
     """Пользователи"""
     queryset = User.objects.all()
     permission_classes = [AllowAny]
-    pagination_class = LimitOffsetPagination
+    pagination_class = RecipePagination
 
     def get_serializer_class(self):
         if self.action == 'create':
