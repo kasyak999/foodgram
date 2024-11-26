@@ -10,7 +10,7 @@ from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from reviews.models import Tag, Recipe, Ingredient
 from api.permissions import IsOwner
-from .filters import RecipeFilter
+from .filters import RecipeFilter, IngredientFilter
 from .serializers import (
     TagSerializer, RecipeSerializer, IngredientSerializer,
     AddRecipeSerializer, AddFavoriteSerializer, AddShoppingCartSerializer)
@@ -35,8 +35,8 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [AllowAny]
     serializer_class = IngredientSerializer
     pagination_class = None
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
-    filterset_fields = ('name',)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = IngredientFilter
 
 
 class RecipeViewSet(viewsets.ModelViewSet):

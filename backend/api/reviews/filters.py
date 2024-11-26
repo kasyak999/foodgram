@@ -1,8 +1,10 @@
 import django_filters
-from reviews.models import ShoppingCart, Favorite, Recipe, Tag
+from reviews.models import (
+    ShoppingCart, Favorite, Recipe, Tag, Ingredient)
 
 
 class RecipeFilter(django_filters.FilterSet):
+    """Фильтр для рецептов"""
     is_favorited = django_filters.ChoiceFilter(
         method='filter',
         choices=[('1', 'Yes'), ('0', 'No')],
@@ -47,3 +49,12 @@ class RecipeFilter(django_filters.FilterSet):
             return queryset.filter(id__in=result)
         else:
             return queryset.exclude(id__in=result)
+
+
+class IngredientFilter(django_filters.FilterSet):
+    """Фильтр для ингридиентов"""
+    name = django_filters.CharFilter(lookup_expr='icontains')
+
+    class Meta:
+        model = Ingredient
+        fields = ['name']
