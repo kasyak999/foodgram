@@ -82,7 +82,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True, methods=['get'], url_path='get-link',
-        permission_classes=[IsAuthenticated])
+        permission_classes=[AllowAny])
     def get_link(self, request, pk=None):
         """Получение короткой ссылки"""
         result = get_object_or_404(Recipe, pk=pk)
