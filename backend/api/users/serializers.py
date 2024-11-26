@@ -6,7 +6,6 @@ from rest_framework.validators import UniqueValidator
 from project.settings import MAX_LENGT_EMAIL, MAX_LENGT_USERNAME
 from users.models import Follow
 from .validators import validate_username
-from django.db.models import Count
 
 
 User = get_user_model()
@@ -24,14 +23,12 @@ class UsersSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
-        if not request or request.user.is_anonymous:
-            return False
         if request.user.follower.filter(following=obj):
             return True
         return False
 
 
-class UserRegistrationSerializer(serializers.ModelSerializer):
+class RegistrationSerializer(serializers.ModelSerializer):
     """Сериализатор для регистрации."""
     email = serializers.EmailField(
         max_length=MAX_LENGT_EMAIL,
@@ -58,8 +55,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             'email', 'id', 'username', 'first_name', 'last_name', 'password')
 
     def to_representation(self, instance):
-        serializer = RegistrationSerializer(instance, context=self.context)
-        return serializer.data
+        result = super().to_representation(instance)
+        result.pop('password')
+        return result
 
     def create(self, validated_data):
         password = validated_data.pop('password')
@@ -67,14 +65,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         return user
-
-
-class RegistrationSerializer(serializers.ModelSerializer):
-    """Вывод после регистрации"""
-    class Meta:
-        model = User
-        fields = (
-            'email', 'id', 'username', 'first_name', 'last_name')
 
 
 class UserAvatarSerializer(serializers.ModelSerializer):
@@ -122,7 +112,8 @@ class FollowSerializer(serializers.ModelSerializer):
         from api.reviews.serializers import RecipeShortSerializer
         recipes = obj.following.recipes.all()
         return RecipeShortSerializer(
-            recipes, many=True, context=self.context).data
+            recipes, many=True, context=self.context
+        ).data
 
     def get_avatar(self, obj):
         if obj.following.avatar:
@@ -133,8 +124,12 @@ class FollowSerializer(serializers.ModelSerializer):
 class AddFollowSerializer(serializers.ModelSerializer):
     """Добавление подписчиков"""
     class Meta:
-        model = Follow
+        model = None
         fields = 'following', 'user'
+
+    def __init__(self, *args, **kwargs):
+        self.Meta.model = kwargs.pop('model')
+        super().__init__(*args, **kwargs)
 
     def validate(self, data):
         if data['user'] == data['following']:
@@ -143,8 +138,6 @@ class AddFollowSerializer(serializers.ModelSerializer):
         return data
 
     def to_representation(self, instance):
-        result = Follow.objects.filter(pk=instance.pk).annotate(
-            recipes_count=Count('following__recipes')
-        ).first()
-        serializer = FollowSerializer(result, context=self.context)
+        instance.recipes_count = instance.following.recipes.count()
+        serializer = FollowSerializer(instance, context=self.context)
         return serializer.data

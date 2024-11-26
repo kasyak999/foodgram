@@ -7,14 +7,14 @@ from rest_framework.permissions import (
     IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from reviews.models import Tag, Recipe, Ingredient
+from reviews.models import Tag, Recipe, Ingredient, Favorite, ShoppingCart
 from api.permissions import IsOwner
 from api.utils import add_method, remove_method
 from api.pagination import RecipePagination
 from .filters import RecipeFilter, IngredientFilter
 from .serializers import (
     TagSerializer, RecipeSerializer, IngredientSerializer,
-    AddRecipeSerializer, AddFavoriteSerializer, AddShoppingCartSerializer)
+    AddRecipeSerializer, AddFavoriteAndShoppingCartSerializer)
 
 
 User = get_user_model()
@@ -68,8 +68,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
             model=Recipe,
             request=request,
             pk=pk,
-            serializer_class=AddFavoriteSerializer,
-            related_field='recipe'
+            serializer_class=AddFavoriteAndShoppingCartSerializer,
+            related_field='recipe',
+            model_serializer=Favorite
         )
 
     @favorite.mapping.delete
@@ -99,8 +100,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
             model=Recipe,
             request=request,
             pk=pk,
-            serializer_class=AddShoppingCartSerializer,
-            related_field='recipe'
+            serializer_class=AddFavoriteAndShoppingCartSerializer,
+            related_field='recipe',
+            model_serializer=ShoppingCart
         )
 
     @shopping_cart.mapping.delete

@@ -9,8 +9,9 @@ from rest_framework.decorators import action
 from api.utils import add_method, remove_method
 from api.pagination import RecipePagination
 from .serializers import (
-    UsersSerializer, UserRegistrationSerializer, UserAvatarSerializer,
+    UsersSerializer, RegistrationSerializer, UserAvatarSerializer,
     FollowSerializer, AddFollowSerializer)
+from users.models import Follow
 
 
 User = get_user_model()
@@ -24,7 +25,7 @@ class UsersViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.action == 'create':
-            return UserRegistrationSerializer
+            return RegistrationSerializer
         return UsersSerializer
 
     @action(
@@ -79,7 +80,8 @@ class UsersViewSet(viewsets.ModelViewSet):
             request=request,
             pk=pk,
             serializer_class=AddFollowSerializer,
-            related_field='following'
+            related_field='following',
+            model_serializer=Follow
         )
 
     @subscribe.mapping.delete

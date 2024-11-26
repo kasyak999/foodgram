@@ -4,14 +4,17 @@ from rest_framework import status
 from reviews.models import RecipeIngredient
 
 
-def add_method(model, request, pk, serializer_class, related_field):
+def add_method(
+    model, request, pk, serializer_class, related_field,
+    model_serializer
+):
     """Добавление в базу"""
     result = get_object_or_404(model, pk=pk)
     data = {
         'user': request.user.id,
         related_field: result.id
     }
-    serializer = serializer_class(data=data)
+    serializer = serializer_class(data=data, model=model_serializer)
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(serializer.data)

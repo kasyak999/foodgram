@@ -1,8 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from drf_extra_fields.fields import Base64ImageField
-from reviews.models import (
-    Tag, Recipe, Ingredient, Favorite, RecipeIngredient, ShoppingCart)
+from reviews.models import Tag, Recipe, Ingredient, RecipeIngredient
 from api.users.serializers import UsersSerializer
 from api.utils import recipe_create_and_update
 
@@ -58,17 +57,16 @@ class RecipeSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if not request or request.user.is_anonymous:
             return False
-        return Favorite.objects.filter(user=request.user, recipe=obj).exists()
+        return request.user.favorites.filter(recipe=obj).exists()
 
     def get_is_in_shopping_cart(self, obj):
         request = self.context.get('request')
         if not request or request.user.is_anonymous:
             return False
-        return ShoppingCart.objects.filter(
-            user=request.user, recipe=obj).exists()
+        return request.user.shoppingcarts.filter(recipe=obj).exists()
 
     def get_ingredients(self, obj):
-        result = RecipeIngredient.objects.filter(recipe=obj)
+        result = obj.recipeingredients.all()
         return RecipeIngredientSerializer(result, many=True).data
 
 
@@ -133,22 +131,15 @@ class RecipeShortSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'image', 'cooking_time']
 
 
-class AddFavoriteSerializer(serializers.ModelSerializer):
-    """Добавление в избраное"""
+class AddFavoriteAndShoppingCartSerializer(serializers.ModelSerializer):
+    """Добавление для избраного и списка покупок"""
     class Meta:
-        model = Favorite
+        model = None
         fields = ['user', 'recipe']
 
-    def to_representation(self, instance):
-        serializer = RecipeShortSerializer(instance.recipe)
-        return serializer.data
-
-
-class AddShoppingCartSerializer(serializers.ModelSerializer):
-    """Добавление в избраное"""
-    class Meta:
-        model = ShoppingCart
-        fields = ['user', 'recipe']
+    def __init__(self, *args, **kwargs):
+        self.Meta.model = kwargs.pop('model')
+        super().__init__(*args, **kwargs)
 
     def to_representation(self, instance):
         serializer = RecipeShortSerializer(instance.recipe)
