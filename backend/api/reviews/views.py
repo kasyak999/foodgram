@@ -15,7 +15,6 @@ from .serializers import (
     TagSerializer, RecipeSerializer, IngredientSerializer,
     AddRecipeSerializer, AddFavoriteSerializer, AddShoppingCartSerializer)
 from api.utils import add_method, remove_method
-from rest_framework import filters
 
 
 User = get_user_model()
