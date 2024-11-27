@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
@@ -88,7 +88,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """Получение короткой ссылки"""
         result = get_object_or_404(Recipe, pk=pk)
         return Response(
-            {"short-link": request.build_absolute_uri(f"/s/{result.link}")},
+            {"short-link": request.build_absolute_uri(f"/s/{result.link}/")},
             status=status.HTTP_200_OK
         )
 
@@ -151,5 +151,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 def short_link(request, link):
     """Короткая ссылка"""
     recipe = get_object_or_404(Recipe, link=link)
-    serializer = RecipeSerializer(recipe, context={'request': request})
-    return Response(serializer.data)
+    print(link)
+    # serializer = RecipeSerializer(recipe, context={'request': request})
+    # return Response(serializer.data)
+    return redirect('recipes-detail', pk=recipe.id)
