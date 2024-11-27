@@ -155,6 +155,6 @@ def short_link(request, link):
     recipe = get_object_or_404(Recipe, link=link)
     # recipe_url = reverse('recipes-detail', kwargs={'pk': recipe.id})
     # url = request.get_host()
-    # recipe_url = reverse('recipes-detail', kwargs={'pk': recipe.id})  # Получаем URL рецепта
+    # recipe_url = reverse('recipes-detail', kwargs={'pk': recipe.id})
     # return redirect(f'{request.scheme}://{request.get_host()}{recipe_url}')
-    return redirect(f'http://localhost:7000/recipes/{recipe.id}')
+    return redirect(f'http://{request.get_host()}/recipes/{recipe.id}')
