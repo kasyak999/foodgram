@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, redirect
+# from django.urls import reverse
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
@@ -15,6 +16,7 @@ from .filters import RecipeFilter, IngredientFilter
 from .serializers import (
     TagSerializer, RecipeSerializer, IngredientSerializer,
     AddRecipeSerializer, AddFavoriteAndShoppingCartSerializer)
+
 from rest_framework.decorators import api_view, permission_classes
 
 
@@ -151,7 +153,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
 def short_link(request, link):
     """Короткая ссылка"""
     recipe = get_object_or_404(Recipe, link=link)
-    print(link)
-    # serializer = RecipeSerializer(recipe, context={'request': request})
-    # return Response(serializer.data)
-    return redirect('recipes-detail', pk=recipe.id)
+    # recipe_url = reverse('recipes-detail', kwargs={'pk': recipe.id})
+    # url = request.get_host()
+    # recipe_url = reverse('recipes-detail', kwargs={'pk': recipe.id})  # Получаем URL рецепта
+    # return redirect(f'{request.scheme}://{request.get_host()}{recipe_url}')
+    return redirect(f'http://localhost:7000/recipes/{recipe.id}')
