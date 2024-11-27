@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
@@ -15,6 +15,7 @@ from .filters import RecipeFilter, IngredientFilter
 from .serializers import (
     TagSerializer, RecipeSerializer, IngredientSerializer,
     AddRecipeSerializer, AddFavoriteAndShoppingCartSerializer)
+from rest_framework.decorators import api_view, permission_classes
 
 
 User = get_user_model()
@@ -145,7 +146,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return response
 
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def short_link(request, link):
     """Короткая ссылка"""
     recipe = get_object_or_404(Recipe, link=link)
-    return redirect('recipes-detail', pk=recipe.id)
+    serializer = RecipeSerializer(recipe, context={'request': request})
+    return Response(serializer.data)
