@@ -110,7 +110,8 @@ class Recipe(models.Model):
 
     def generate_link(self):
         """Генерация ссылки"""
-        if not self.link:
+        self.link = uuid.uuid4().hex[:5]
+        while Recipe.objects.filter(link=self.link).exists():
             self.link = uuid.uuid4().hex[:5]
 
     class Meta:
