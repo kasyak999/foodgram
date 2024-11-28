@@ -153,8 +153,5 @@ class RecipeViewSet(viewsets.ModelViewSet):
 def short_link(request, link):
     """Короткая ссылка"""
     recipe = get_object_or_404(Recipe, link=link)
-    return redirect('recipes-detail', pk=recipe.id)
-
-    # recipe_url = reverse('recipes-detail', kwargs={'pk': recipe.id})
-    # return redirect(f'{request.scheme}://{request.get_host()}{recipe_url}')
-    # return redirect(f'http://{request.get_host()}/recipes/{recipe.id}')
+    # return redirect('recipes', pk=recipe.id)
+    return redirect(f'/recipes/{recipe.id}/')

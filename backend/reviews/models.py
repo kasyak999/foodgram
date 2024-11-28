@@ -108,15 +108,10 @@ class Recipe(models.Model):
     image = models.ImageField(upload_to='images/', verbose_name='Картинка')
     text = models.TextField(verbose_name='Текстовое описание')
 
-    # def clean(self):
-    #     # Проверяем, есть ли связанные ингредиенты
-    #     if not self.ingredients.exists():
-    #         raise ValidationError("Рецепт не может быть без ингредиентов.")
-
     def generate_link(self):
         """Генерация ссылки"""
         if not self.link:
-            self.link = uuid.uuid4().hex[:3]
+            self.link = uuid.uuid4().hex[:5]
 
     class Meta:
         """Перевод модели"""
